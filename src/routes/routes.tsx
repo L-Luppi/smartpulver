@@ -1,17 +1,18 @@
-import { createBrowserRouter } from 'react-router-dom';
-import DashboardLayout from '../components/organisms/DashboardLayout';
+import { createBrowserRouter } from "react-router-dom";
+import DefaultLayout from "../layouts/DefaultLayout";
+import Home from "../pages/Home";
 
-import Home from '../pages/Home';
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <DashboardLayout
-     />,
-    children: [
-      {
-        path: '',
-        element: <Home />,
-      },
-    ],
-  },
-]);
+export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>) =>
+  createBrowserRouter([
+    {
+      path: "/",
+      element: <DefaultLayout isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />,
+      children: [
+        { path: "", element: <Home /> },
+        { path: "settings", element: <Home /> },
+        { path: "clients", element: <Home /> },
+        { path: "drones", element: <Home /> },
+        { path: "reports", element: <Home /> },
+      ],
+    },
+  ]);

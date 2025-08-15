@@ -1,14 +1,14 @@
-import { Typography, Paper, Box } from '@mui/material';
+import { Box } from '@mui/material';
+import DashboardCards from '../components/organisms/DashboardInfoCards';
+import DashboardCharts from '../components/organisms/DashboardCharts';
 
 export default function Home() {
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Dashboard
-      </Typography>
-      <Paper sx={{ p: 2 }}>
-        <Typography>Conteúdo da dashboard...</Typography>
-      </Paper>
+      <DashboardCards />
+      <Box mt={4}>
+        <DashboardCharts />
+      </Box>
     </Box>
   );
 }
