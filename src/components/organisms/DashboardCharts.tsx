@@ -1,28 +1,67 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import ChartHeader from '../molecules/ChartHeader';
-import { Card, CardContent } from '@mui/material';
+import { useState } from "react";
+import { Grid } from "@mui/material";
+import dayjs from "dayjs";
+import ChartCard from "../atoms/ChartCard";
+import AreaChartWidget from "../molecules/AreaChartWidget";
+import PieChartWidget from "../molecules/PieChartWidget";
 
-const data = [
-  { name: 'Jan', sales: 400 },
-  { name: 'Feb', sales: 300 },
-  { name: 'Mar', sales: 500 },
+const hectaresPorMes = [
+  { mes: "Jan", hectares: 120 },
+  { mes: "Fev", hectares: 90 },
+  { mes: "Mar", hectares: 150 },
+  { mes: "Abr", hectares: 200 },
+  { mes: "Mai", hectares: 170 },
+  { mes: "Jun", hectares: 220 },
+  { mes: "Jul", hectares: 250 },
+  { mes: "Ago", hectares: 190 },
+  { mes: "Set", hectares: 210 },
+  { mes: "Out", hectares: 180 },
+  { mes: "Nov", hectares: 140 },
+  { mes: "Dez", hectares: 160 },
+];
+
+const hectaresPorAeronave = [
+  { name: "Aeronave A", value: 400 },
+  { name: "Aeronave B", value: 300 },
+  { name: "Aeronave C", value: 300 },
+  { name: "Aeronave D", value: 200 },
 ];
 
 export default function DashboardCharts() {
+  const [mesFiltro, setMesFiltro] = useState("");
+  const [anoFiltro, setAnoFiltro] = useState("2025");
+  const [dataInicio, setDataInicio] = useState(dayjs().startOf("month").format("YYYY-MM-DD"));
+  const [dataFim, setDataFim] = useState(dayjs().endOf("month").format("YYYY-MM-DD"));
+
+  const dadosAreaFiltrados = hectaresPorMes.filter((d) =>
+    mesFiltro ? d.mes.toLowerCase().startsWith(mesFiltro.toLowerCase()) : true
+  );
+
   return (
-    <Card>
-        <CardContent>
-      <ChartHeader title="Vendas Mensais" />
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey="sales" stroke="#8884d8" />
-        </LineChart>
-      </ResponsiveContainer>
-      </CardContent>
-    </Card>
+    <Grid container spacing={2}>
+      <Grid size={{ xs: 12, md: 12, lg: 8 }}>
+        <ChartCard title={`Hectares Pulverizados (${anoFiltro})`}>
+          <AreaChartWidget
+            data={dadosAreaFiltrados}
+            mesFiltro={mesFiltro}
+            setMesFiltro={setMesFiltro}
+            anoFiltro={anoFiltro}
+            setAnoFiltro={setAnoFiltro}
+          />
+        </ChartCard>
+      </Grid>
+
+      <Grid size={{ xs: 12, md: 12, lg: 4 }}>
+        <ChartCard title="Hectares por Aeronave">
+          <PieChartWidget
+            data={hectaresPorAeronave}
+            dataInicio={dataInicio}
+            setDataInicio={setDataInicio}
+            dataFim={dataFim}
+            setDataFim={setDataFim}
+          />
+        </ChartCard>
+      </Grid>
+    </Grid>
   );
 }

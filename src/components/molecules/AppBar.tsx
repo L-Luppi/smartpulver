@@ -1,12 +1,10 @@
-import { Toolbar } from "@mui/material";
+import { Toolbar, Box } from "@mui/material";
 import IconButton from "../atoms/IconButton";
 import Typography from "../atoms/Typography";
-import Button from "../atoms/Button";
+import ThemeToggleButton from "./ThemeButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 
 interface AppBarMoleculeProps {
   isDarkMode: boolean;
@@ -35,23 +33,25 @@ export default function AppBarMolecule({
         <MenuIcon />
       </IconButton>
 
-      {/* Título */}
-      <Typography variant="h6" sx={{ flexGrow: 1 }}>
-        Dashboard
-      </Typography>
+      {/* Agrupa título + toggle */}
+      <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+        <Typography variant="h6">
+            SMART PULVER
+        </Typography>
 
-      {/* Botão desktop toggle */}
-      <IconButton
-        onClick={() => setDesktopOpen(!desktopOpen)}
-        sx={{ mr: 2, display: { xs: "none", sm: "inline-flex" } }}
-      >
-        {desktopOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-      </IconButton>
+        <IconButton
+          onClick={() => setDesktopOpen(!desktopOpen)}
+          sx={{ ml: 3, display: { xs: "none", sm: "inline-flex" } }}
+        >
+          {desktopOpen ? <RadioButtonCheckedIcon /> : <RadioButtonUncheckedIcon /> }
+        </IconButton>
+      </Box>
 
       {/* Botão tema */}
-      <Button onClick={() => setIsDarkMode(!isDarkMode)} color="secondary">
-        {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
-      </Button>
+      <ThemeToggleButton
+        isDarkMode={isDarkMode}
+        onClick={() => setIsDarkMode(!isDarkMode)}
+      />
     </Toolbar>
   );
 }
