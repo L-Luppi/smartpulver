@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import DefaultLayout from "../layouts/DefaultLayout";
 import Home from "../pages/Home";
+import CreateAircraft from "../pages/Aircrafts/Create";
 
 export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>) =>
   createBrowserRouter([
@@ -9,10 +10,9 @@ export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.
       element: <DefaultLayout isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />,
       children: [
         { path: "", element: <Home /> },
-        { path: "settings", element: <Home /> },
-        { path: "clients", element: <Home /> },
-        { path: "drones", element: <Home /> },
-        { path: "reports", element: <Home /> },
+        { path: "aeronaves/criar", element: <CreateAircraft /> },
+        { path: "aeronaves/listar", element: <Home /> },
+        { path: "aeronaves/relatorios", element: <Home /> },
       ],
     },
   ]);

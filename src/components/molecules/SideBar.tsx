@@ -9,6 +9,7 @@ import {
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SettingsIcon from "@mui/icons-material/Settings";
 import SidebarItem from "../atoms/SideBarItem";
+import { AirplanemodeActive } from "@mui/icons-material";
 const drawerWidth = 240;
 
 interface SidebarProps {
@@ -31,20 +32,14 @@ export default function Sidebar({ mobileOpen, onClose, desktopOpen = true }: Sid
       <List>
         <SidebarItem icon={<DashboardIcon />} text="Dashboard" to="/" />
         <SidebarItem
-          icon={<SettingsIcon />}
-          text="Configurações"
-          to="/settings"
-        />
-        <SidebarItem icon={<SettingsIcon />} text="Relatórios" to="/reports" />
-        <SidebarItem
-          icon={<SettingsIcon />}
-          text="Configurações"
-          subItems={[
-            { text: "Usuários", to: "/settings/users" },
-            { text: "Permissões", to: "/settings/permissions" },
+          icon={<AirplanemodeActive />}
+          text="Aeronaves"
+            subItems={[
+            { text: "Cadastrar", to: "/aeronaves/criar" },
+            { text: "Listar", to: "/aeronaves/listar" },
+            { text: "Relatórios", to: "/aeronaves/relatorios" },
           ]}
         />
-        <SidebarItem icon={<SettingsIcon />} text="Sair" to="/logout" />
       </List>
     </>
   );
