@@ -1,9 +1,7 @@
-// organisms/AircraftForm.tsx
-import { Grid, Box, Button, Card } from "@mui/material";
-import Input from "../atoms/Input";
-import Select from "../atoms/Select";
+import { Box, Button, Card, CardContent } from "@mui/material";
 import AircraftLimitAlert from "../molecules/AircraftLimitAlert";
 import { Dispatch, SetStateAction } from "react";
+import AircraftInputs from "../molecules/AircraftBasicInfo";
 
 interface AircraftFormProps {
   state: AircraftFormState;
@@ -11,13 +9,14 @@ interface AircraftFormProps {
   maxAircrafts: number;
   currentAircrafts: number;
 }
+
 interface AircraftFormState {
   prefixo: string;
   fabricante: string;
   modelo: string;
   tipo: string;
   ano: string;
-  apelido?: string | null | undefined;
+  apelido?: string | null;
 }
 
 export default function AircraftForm({
@@ -28,66 +27,22 @@ export default function AircraftForm({
 }: AircraftFormProps) {
   const canAdd = currentAircrafts < maxAircrafts;
 
+  const handleChange = (field: string, value: string) => {
+    setState({ ...state, [field]: value });
+  };
+
   return (
     <Box>
       <Card>
-        {" "}
+        <CardContent>
         <AircraftLimitAlert current={currentAircrafts} max={maxAircrafts} />
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Input
-              label="Prefixo"
-              value={state.prefixo}
-              onChange={(v) => setState({ ...state, prefixo: v })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Input
-              label="Fabricante"
-              value={state.fabricante}
-              onChange={(v) => setState({ ...state, fabricante: v })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Input
-              label="Modelo"
-              value={state.modelo}
-              onChange={(v) => setState({ ...state, modelo: v })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Select
-              label="Tipo de Aeronave"
-              value={state.tipo}
-              onChange={(v) => setState({ ...state, tipo: v })}
-              options={[
-                { label: "Monomotor", value: "monomotor" },
-                { label: "Bimotor", value: "bimotor" },
-                { label: "Jato", value: "jato" },
-              ]}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Input
-              label="Ano de Fabricação"
-              type="number"
-              value={state.ano}
-              onChange={(v) => setState({ ...state, ano: v })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Input
-              label="Apelido (opcional)"
-              value={state.apelido || ""}
-              onChange={(v) => setState({ ...state, apelido: v })}
-            />
-          </Grid>
-        </Grid>
+        <AircraftInputs state={state} onChange={handleChange} />
         <Box mt={4}>
           <Button variant="contained" color="primary" disabled={!canAdd}>
             Criar Aeronave
           </Button>
         </Box>
+        </CardContent>
       </Card>
     </Box>
   );

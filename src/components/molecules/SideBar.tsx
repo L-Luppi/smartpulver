@@ -6,10 +6,8 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import SettingsIcon from "@mui/icons-material/Settings";
 import SidebarItem from "../atoms/SideBarItem";
-import { AirplanemodeActive } from "@mui/icons-material";
+import { AirplanemodeActive, Article, Dashboard } from "@mui/icons-material";
 const drawerWidth = 240;
 
 interface SidebarProps {
@@ -30,14 +28,23 @@ export default function Sidebar({ mobileOpen, onClose, desktopOpen = true }: Sid
         </Typography>
       </Toolbar>
       <List>
-        <SidebarItem icon={<DashboardIcon />} text="Dashboard" to="/" />
+        <SidebarItem icon={<Dashboard />} text="Dashboard" to="/" />
         <SidebarItem
           icon={<AirplanemodeActive />}
           text="Aeronaves"
             subItems={[
             { text: "Cadastrar", to: "/aeronaves/criar" },
             { text: "Listar", to: "/aeronaves/listar" },
-            { text: "Relatórios", to: "/aeronaves/relatorios" },
+            // { text: "Relatórios", to: "/aeronaves/relatorios" },
+          ]}
+        />
+          <SidebarItem
+          icon={<Article />}
+          text="Ordens de Serviço"
+            subItems={[
+            { text: "Criar", to: "/ordens/criar" },
+            { text: "Listar", to: "/ordens/listar" },
+            // { text: "Relatórios", to: "/aeronaves/relatorios" },
           ]}
         />
       </List>

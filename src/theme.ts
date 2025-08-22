@@ -24,7 +24,17 @@ export const lightTheme = createTheme({
   typography: {
     fontFamily: 'Roboto, Arial, sans-serif',
   },
+  components: {
+    MuiListItemText: {
+      styleOverrides: {
+        primary: {
+          fontSize: '0.9rem',
+        },
+      },
+    },
+  },
 });
+
 
 // Tema escuro
 export const darkTheme = createTheme({
@@ -49,5 +59,14 @@ export const darkTheme = createTheme({
   },
   typography: {
     fontFamily: 'Roboto, Arial, sans-serif',
+  },
+  components: {
+    MuiListItemText: {
+      styleOverrides: {
+        primary: {
+          fontSize: '0.9rem',
+        },
+      },
+    },
   },
 });
