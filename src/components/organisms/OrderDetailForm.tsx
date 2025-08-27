@@ -4,13 +4,13 @@ import OrderDetailstInputs from "../molecules/OrderDetailsInputs";
 
 interface OrderDetailsData {
   numeroServico: string;
-    cliente: string;
-    cnpj: string;
-    propriedade: string;
-    talhao: string;
-    estado: string;
-    municipio: string;
-    endereco: string;
+  cliente: string;
+  cnpj: string;
+  propriedade: string;
+  talhao: string;
+  estado: string;
+  municipio: string;
+  endereco: string;
 }
 
 interface OrderDetailsFormProps {
@@ -18,18 +18,17 @@ interface OrderDetailsFormProps {
   setState: Dispatch<SetStateAction<OrderDetailsData>>;
 }
 
-export default function OrderDetailsForm({ state, setState }: OrderDetailsFormProps) {
+export default function OrderDetailsForm({
+  state,
+  setState,
+}: OrderDetailsFormProps) {
   const handleChange = (field: keyof OrderDetailsData, value: string) => {
     setState({ ...state, [field]: value });
   };
 
   return (
     <Box>
-      <Card>
-        <CardContent>
-          <OrderDetailstInputs state={state} onChange={handleChange} />
-        </CardContent>
-      </Card>
+      <OrderDetailstInputs state={state} onChange={handleChange} />
     </Box>
   );
 }

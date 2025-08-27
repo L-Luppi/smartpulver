@@ -21,6 +21,7 @@ const InputMaskCNPJ: React.FC<InputCNPJProps> = ({ label, value, onChange }) => 
       onChange={handleChange}
       fullWidth
       margin="normal"
+      size="small"
     />
   );
 };

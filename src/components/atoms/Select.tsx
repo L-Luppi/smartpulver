@@ -16,6 +16,7 @@ export default function Select({ label, value, onChange, options }: SelectProps)
       onChange={(e) => onChange(e.target.value)}
       fullWidth
       margin="normal"
+      size="small"
     >
       {options.map((opt) => (
         <MenuItem key={opt.value} value={opt.value}>

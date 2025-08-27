@@ -1,4 +1,4 @@
-import { Box, Card, CardContent } from "@mui/material";
+import { Box } from "@mui/material";
 import OrderClientInputs from "../molecules/OrderClientInputs";
 import { Dispatch, SetStateAction } from "react";
 
@@ -18,18 +18,14 @@ interface OrderFormProps {
   setState: Dispatch<SetStateAction<ClientFormData>>;
 }
 
-export default function OrderForm({ state, setState }: OrderFormProps) {
+export default function OrderClientForm({ state, setState }: OrderFormProps) {
   const handleChange = (field: keyof ClientFormData, value: string) => {
     setState({ ...state, [field]: value });
   };
 
   return (
     <Box>
-      <Card>
-        <CardContent>
           <OrderClientInputs state={state} onChange={handleChange} />
-        </CardContent>
-      </Card>
     </Box>
   );
 }

@@ -1,6 +1,9 @@
+import { useState } from "react";
+import dayjs, { Dayjs } from "dayjs";
 import { Grid } from "@mui/material";
 import Input from "../atoms/Input";
 import InputMaskCNPJ from "../atoms/InputCnpj";
+import DatePickerAtom from "../atoms/DatePicker";
 import Select from "../atoms/Select";
 
 interface ClientInfoFieldsProps {
@@ -10,16 +13,24 @@ interface ClientInfoFieldsProps {
     cnpj: string;
     propriedade: string;
     talhao: string;
-    estado: string;   // aqui vai ser a Data Inicial
-    municipio: string; // aqui vai ser a Data Final
+    estado: string;
+    municipio: string;
     endereco: string;
   };
-  onChange: (field: keyof ClientInfoFieldsProps["state"], value: string) => void;
+  onChange: (
+    field: keyof ClientInfoFieldsProps["state"],
+    value: string
+  ) => void;
 }
 
-export default function OrderDetailstInputs({ state, onChange }: ClientInfoFieldsProps) {
+export default function OrderDetailstInputs({
+  state,
+  onChange,
+}: ClientInfoFieldsProps) {
+  const [date, setDate] = useState<Dayjs | null>(dayjs());
+
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} alignItems={"center"}>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Input
           label="Tipo de Serviço"
@@ -72,21 +83,19 @@ export default function OrderDetailstInputs({ state, onChange }: ClientInfoField
 
       {/* DATA INICIAL (date) */}
       <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-        <Input
-          type="date"
-          label="Data Inicial"
-          value={state.estado}
-          onChange={(value) => onChange("estado", value)}
+        <DatePickerAtom
+          label="Escolha a data"
+          value={date}
+          onChange={setDate}
         />
       </Grid>
 
       {/* DATA FINAL (date) */}
       <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-        <Input
-          type="date"
-          label="Data Final"
-          value={state.municipio}
-          onChange={(value) => onChange("municipio", value)}
+        <DatePickerAtom
+          label="Escolha a data"
+          value={date}
+          onChange={setDate}
         />
       </Grid>
 

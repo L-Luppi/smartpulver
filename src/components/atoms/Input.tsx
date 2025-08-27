@@ -16,6 +16,7 @@ export default function Input({ label, value, onChange, type = "text" }: InputPr
       onChange={(e) => onChange(e.target.value)}
       fullWidth
       margin="normal"
+      size="small"
     />
   );
 }
