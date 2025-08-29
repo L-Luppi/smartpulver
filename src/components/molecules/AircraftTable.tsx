@@ -9,10 +9,10 @@ import {
   TableRow,
   Paper,
   TablePagination,
-  Typography,
 } from "@mui/material";
 import ButtonDefault from "../atoms/Button";
-import AircraftRow, { AircraftRowProps } from "../molecules/AircraftRow";
+import AircraftRow from "../molecules/AircraftRow";
+import AircraftRowSkeleton from "../molecules/AircraftRowSkeleton"; // novo
 
 export interface Aircraft {
   id: string;
@@ -28,6 +28,7 @@ interface AircraftTableProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
+  loading?: boolean; // 👈 nova prop
 }
 
 export default function AircraftTable({
@@ -35,6 +36,7 @@ export default function AircraftTable({
   onEdit,
   onDelete,
   onAdd,
+  loading = false,
 }: AircraftTableProps) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -43,12 +45,20 @@ export default function AircraftTable({
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  const paginatedAircrafts = aircrafts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  // Se está carregando, cria array "fake" para skeleton
+  const paginatedAircrafts = loading
+    ? Array.from({ length: rowsPerPage })
+    : aircrafts.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      );
 
   return (
     <Box>
@@ -70,14 +80,18 @@ export default function AircraftTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedAircrafts.map((aircraft) => (
-              <AircraftRow
-                key={aircraft.id}
-                aircraft={aircraft}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            ))}
+            {loading
+              ? paginatedAircrafts.map((_, i) => (
+                  <AircraftRowSkeleton key={i} />
+                ))
+              : paginatedAircrafts.map((aircraft) => (
+                  <AircraftRow
+                    key={aircraft.id}
+                    aircraft={aircraft}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
+                ))}
           </TableBody>
         </Table>
       </TableContainer>

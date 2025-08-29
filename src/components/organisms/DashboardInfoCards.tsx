@@ -18,6 +18,7 @@ export default function DashboardCards() {
           value={1024}
           icon={<ListAltIcon />}
           clickable
+          loading={true}
           onPrimaryClick={() => console.log("Primary action for Ordens")}
           onSecondaryClick={() => console.log("Secondary action for Ordens")}
         />
@@ -29,6 +30,7 @@ export default function DashboardCards() {
           value={230}
           icon={<PeopleIcon />}
           clickable
+          loading={true}
           onPrimaryClick={() => console.log("Primary action for Clientes")}
           onSecondaryClick={() => console.log("Secondary action for Clientes")}
         />
@@ -40,6 +42,7 @@ export default function DashboardCards() {
           value={56}
           icon={<WorkIcon />}
           clickable
+          loading={true}
           onPrimaryClick={() => console.log("Primary action for Funcionários")}
           onSecondaryClick={() =>
             console.log("Secondary action for Funcionários")
@@ -53,6 +56,7 @@ export default function DashboardCards() {
           value={5}
           icon={<FlightIcon />}
           clickable
+          loading={true}
           onPrimaryClick={() => console.log("Primary action for Aeronaves")}
           onSecondaryClick={() => console.log("Secondary action for Aeronaves")}
         />
@@ -64,6 +68,7 @@ export default function DashboardCards() {
           value={82}
           icon={<InventoryIcon />}
           clickable
+          loading={true}
           onPrimaryClick={() => console.log("Primary action for Produtos")}
           onSecondaryClick={() => console.log("Secondary action for Produtos")}
         />
@@ -75,6 +80,7 @@ export default function DashboardCards() {
           value="$12.345"
           icon={<MonetizationOnIcon />}
           clickable
+          loading={true}
           onPrimaryClick={() => console.log("Primary action for Receita")}
           onSecondaryClick={() => console.log("Secondary action for Receita")}
         />
