@@ -2,6 +2,8 @@ import { createBrowserRouter } from "react-router-dom";
 import DefaultLayout from "../layouts/DefaultLayout";
 import Home from "../pages/Home";
 
+import Teste from "../pages/Teste.tsx"
+
 export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>) =>
   createBrowserRouter([
     {
@@ -13,6 +15,7 @@ export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.
         { path: "clients", element: <Home /> },
         { path: "drones", element: <Home /> },
         { path: "reports", element: <Home /> },
+        { path: "testAPI", element: <Teste />}
       ],
     },
   ]);

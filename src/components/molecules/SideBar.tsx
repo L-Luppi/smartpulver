@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SettingsIcon from "@mui/icons-material/Settings";
+import WarningIcon from "@mui/icons-material/Warning";
 import SidebarItem from "../atoms/SideBarItem";
 const drawerWidth = 240;
 
@@ -43,6 +44,11 @@ export default function Sidebar({ mobileOpen, onClose, desktopOpen = true }: Sid
             { text: "Usuários", to: "/settings/users" },
             { text: "Permissões", to: "/settings/permissions" },
           ]}
+        />
+        <SidebarItem
+              icon={<WarningIcon />}
+              text="Teste API"
+              to="/testAPI"
         />
         <SidebarItem icon={<SettingsIcon />} text="Sair" to="/logout" />
       </List>
