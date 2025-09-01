@@ -7,7 +7,13 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import SidebarItem from "../atoms/SideBarItem";
-import { AirplanemodeActive, Article, Dashboard } from "@mui/icons-material";
+import {
+  AirplanemodeActive,
+  Article,
+  Dashboard,
+  Group,
+  Badge,
+} from "@mui/icons-material";
 const drawerWidth = 240;
 
 interface SidebarProps {
@@ -16,7 +22,11 @@ interface SidebarProps {
   desktopOpen?: boolean;
 }
 
-export default function Sidebar({ mobileOpen, onClose, desktopOpen = true }: SidebarProps) {
+export default function Sidebar({
+  mobileOpen,
+  onClose,
+  desktopOpen = true,
+}: SidebarProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -32,19 +42,33 @@ export default function Sidebar({ mobileOpen, onClose, desktopOpen = true }: Sid
         <SidebarItem
           icon={<AirplanemodeActive />}
           text="Aeronaves"
-            subItems={[
+          subItems={[
             { text: "Cadastrar", to: "/aeronaves/criar" },
             { text: "Listar", to: "/aeronaves/listar" },
-            // { text: "Relatórios", to: "/aeronaves/relatorios" },
           ]}
         />
-          <SidebarItem
+        <SidebarItem
           icon={<Article />}
           text="Ordens de Serviço"
-            subItems={[
+          subItems={[
             { text: "Criar", to: "/ordens/criar" },
             { text: "Listar", to: "/ordens/listar" },
-            // { text: "Relatórios", to: "/aeronaves/relatorios" },
+          ]}
+        />
+        <SidebarItem
+          icon={<Group />}
+          text="Clientes"
+          subItems={[
+            { text: "Criar", to: "/clientes/criar" },
+            { text: "Listar", to: "/clientes/listar" },
+          ]}
+        />
+        <SidebarItem
+          icon={<Badge />}
+          text="Funcionários"
+          subItems={[
+            { text: "Criar", to: "/funcionarios/criar" },
+            { text: "Listar", to: "/funcionarios/listar" },
           ]}
         />
       </List>

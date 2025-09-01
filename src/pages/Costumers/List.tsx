@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AircraftList from "../../components/organisms/AircraftList";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { fetchAircrafts, deleteAircraftAsync } from "../../store/aircraftSlice";
+import { fetchAircrafts,  deleteAircraftAsync } from "../../store/aircraftSlice";
 
 export default function ListAircrafts() {
   const dispatch = useAppDispatch();

@@ -1,4 +1,3 @@
-// molecules/AircraftLimitAlert.tsx
 import Alert from "../atoms/Alert";
 
 interface AircraftLimitAlertProps {
