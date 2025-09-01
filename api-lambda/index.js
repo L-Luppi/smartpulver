@@ -1,4 +1,3 @@
-// Main Lambda handler with modular architecture - Fixed imports
 const { corsResponse } = require('./utils/response');
 
 // Import all handler modules

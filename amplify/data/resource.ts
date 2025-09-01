@@ -1,44 +1,45 @@
-import {type ClientSchema, a, defineData, defineFunction, secret} from "@aws-amplify/backend";
+// amplify/data/resource.ts
+import { a, defineData } from "@aws-amplify/backend";
 
-// 1. Define your MySQL connector function
-//export const mysqlConnector = defineFunction({
-//    environment: {
-//        SQL_CONNECTION_STRING: secret('SQL_CONNECTION_STRING')
-//    },
-//});
-
-// Schema imported with ampx generate schema-from-database
-// Check Amplify Gen 2 doc for SQL_CONNECTION_STRING
-//import { schema as generatedSqlSchema } from './schema.sql';
-
-// Add a global authorization rule
-//const smartpulverSchema = generatedSqlSchema.authorization(allow => allow.guest())
-
-//smartpulverSchema.models.agrofit_produto.authorization(allow => allow.publicApiKey().to(['read']));
-
-// Schema for DynamoDB tables managed by Amplify
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.owner()]),
+    // Enhanced User Profile with roles and permissions
+    UserProfile: a
+        .model({
+            email: a.email().required(),
+            name: a.string().required(),
+            role: a.enum(['admin', 'manager', 'user', 'viewer']),
+            department: a.string(),
+            isActive: a.boolean().default(true),
+            lastLogin: a.datetime(),
+            preferences: a.json(),
+            createdAt: a.datetime(),
+            updatedAt: a.datetime(),
+        })
+        .authorization((allow) => [
+            allow.owner(),
+            allow.group('admin').to(['read', 'create', 'update', 'delete']),
+            allow.group('manager').to(['read', 'update']),
+        ]),
+
+    // Keep the simple Todo for testing
+    Todo: a
+        .model({
+            content: a.string(),
+            completed: a.boolean().default(false),
+            priority: a.enum(['low', 'medium', 'high']),
+        })
+        .authorization((allow) => [
+            allow.owner(),
+            allow.group('admin').to(['read', 'create', 'update', 'delete']),
+        ]),
 });
 
-
-// Use the a.combine() operator to stitch together the models backed by DynamoDB
-// and the models backed by Postgres or MySQL databases.
-//const combinedSchema = a.combine([schema, smartpulverSchema]);
-
-export type Schema = ClientSchema<typeof schema >;
-
 export const data = defineData({
-  schema: schema,
-  authorizationModes: {
-    defaultAuthorizationMode: 'apiKey',
-    // API Key is used for a.allow.public() rules
-    apiKeyAuthorizationMode: {
-      expiresInDays: 30,
+    schema,
+    authorizationModes: {
+        defaultAuthorizationMode: 'userPool',
+        apiKeyAuthorizationMode: {
+            expiresInDays: 30,
+        },
     },
-  },
 });
