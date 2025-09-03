@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import getAccessToken from "../services/getAccessToken";
 
 export interface Aircraft {
@@ -36,12 +36,12 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 export const fetchAircrafts = createAsyncThunk(
   "aircrafts/fetch",
   async ({ page, rowsPerPage }: { page: number; rowsPerPage: number }) => {
-    const token = await getAccessToken(); // 🔑 pega o token do Cognito
+    const token = await getAccessToken();
 
-    const res = await fetch(`${BASE_URL}/drones?page=${page}&limit=${rowsPerPage}`, {
+    const res = await fetch(`${BASE_URL}drones?page=${page}&limit=${rowsPerPage}`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // 🔑 envia token no header
+        "Authorization": `Bearer ${token}`,
       },
     });
 

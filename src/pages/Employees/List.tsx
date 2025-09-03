@@ -14,7 +14,7 @@ export default function ListAircrafts() {
 
   useEffect(() => {
     dispatch(fetchAircrafts({ page, rowsPerPage }));
-  }, [dispatch, page, rowsPerPage]);
+  }, [dispatch]);
 
   const handleEdit = (id: string) => {
     console.log("Editar aeronave:", id);

@@ -1,15 +1,9 @@
 import { TableCell, TableRow } from "@mui/material";
 import ButtonDefault from "../atoms/Button";
+import { Aircraft } from "./AircraftTable";
 
 export interface AircraftRowProps {
-  aircraft: {
-    id: string;
-    prefix: string;
-    model: string;
-    manufacturer: string;
-    year: number;
-    type: string;
-  };
+  aircraft: Aircraft;          // ✅ usa a interface Aircraft existente
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }

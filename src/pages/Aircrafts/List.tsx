@@ -1,5 +1,5 @@
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import { Box } from "@mui/material";
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AircraftList from "../../components/organisms/AircraftList";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
@@ -8,30 +8,42 @@ import { fetchAircrafts, deleteAircraftAsync } from "../../store/aircraftSlice";
 export default function ListAircrafts() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { items, loading, page, rowsPerPage } = useAppSelector(
-    (s) => s.aircrafts
-  );
+
+  const items = useAppSelector((s) => s.aircrafts.items);
+  const loading = useAppSelector((s) => s.aircrafts.loading);
+  const page = useAppSelector((s) => s.aircrafts.page);
+  const rowsPerPage = useAppSelector((s) => s.aircrafts.rowsPerPage);
+
+  const initialized = useRef(false);
 
   useEffect(() => {
-    dispatch(fetchAircrafts({ page, rowsPerPage }));
+    if (!initialized.current) {
+      dispatch(fetchAircrafts({ page, rowsPerPage }));
+      initialized.current = true;
+    }
   }, [dispatch, page, rowsPerPage]);
 
-  const handleEdit = (id: string) => {
+  const handleEdit = useCallback((id: string) => {
     console.log("Editar aeronave:", id);
-  };
+  }, []);
 
-  const handleDelete = (id: string) => {
-    dispatch(deleteAircraftAsync(id));
-  };
+  const handleDelete = useCallback(
+    (id: string) => {
+      dispatch(deleteAircraftAsync(id));
+    },
+    [dispatch]
+  );
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     navigate("/aeronaves/criar");
-  };
+  }, [navigate]);
+
+  const aircraftsMemo = useMemo(() => items, [items]);
 
   return (
     <Box>
       <AircraftList
-        aircrafts={items}
+        aircrafts={aircraftsMemo}
         loading={loading}
         onEdit={handleEdit}
         onDelete={handleDelete}

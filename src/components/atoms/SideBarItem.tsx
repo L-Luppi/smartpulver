@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 interface SubItem {
   text: string;
   to: string;
+  icon?: React.ReactNode;
 }
 
 interface SidebarItemProps {
@@ -64,6 +65,7 @@ export default function SidebarItem({
                 component={Link}
                 to={sub.to}
               >
+                <ListItemIcon>{sub.icon}</ListItemIcon>
                 <ListItemText primary={sub.text} />
               </ListItemButton>
             ))}

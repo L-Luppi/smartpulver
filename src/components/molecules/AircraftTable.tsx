@@ -52,13 +52,14 @@ export default function AircraftTable({
     setPage(0);
   };
 
-  // Se está carregando, cria array "fake" para skeleton
-  const paginatedAircrafts = loading
-    ? Array.from({ length: rowsPerPage })
-    : aircrafts.slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-      );
+// Array paginado de aeronaves reais
+const paginatedAircraftsData = aircrafts.slice(
+  page * rowsPerPage,
+  page * rowsPerPage + rowsPerPage
+);
+
+// Array "fake" para skeleton
+const paginatedSkeletons = Array.from({ length: rowsPerPage });
 
   return (
     <Box>
@@ -80,19 +81,18 @@ export default function AircraftTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading
-              ? paginatedAircrafts.map((_, i) => (
-                  <AircraftRowSkeleton key={i} />
-                ))
-              : paginatedAircrafts.map((aircraft) => (
-                  <AircraftRow
-                    key={aircraft.id}
-                    aircraft={aircraft}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                  />
-                ))}
-          </TableBody>
+  {loading
+    ? paginatedSkeletons.map((_, i) => <AircraftRowSkeleton key={i} />)
+    : paginatedAircraftsData.map((aircraft) => (
+        <AircraftRow
+          key={aircraft.id}
+          aircraft={aircraft}   // ✅ TypeScript sabe que é Aircraft
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      ))}
+</TableBody>
+
         </Table>
       </TableContainer>
       <TablePagination

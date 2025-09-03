@@ -1,6 +1,9 @@
 import { createTheme } from '@mui/material/styles';
 
-// Tema claro
+// Fonte menor para text, ícones maiores
+const sidebarTypography = { fontSize: '0.85rem' }; // 85% do tamanho padrão
+const sidebarIcon = { fontSize: '48px' }; // maior que padrão (24px)
+
 export const lightTheme = createTheme({
   palette: {
     mode: "light",
@@ -11,15 +14,22 @@ export const lightTheme = createTheme({
   },
   typography: { fontFamily: "Roboto, Arial, sans-serif" },
   components: {
-    MuiInputLabel: {
+    MuiInputLabel: { styleOverrides: { root: { color: "#818181FF" } } },
+
+    // Ajuste global do ListItem
+    MuiListItemText: {
       styleOverrides: {
-        root: { color: "#818181FF" },
+        primary: sidebarTypography,
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: sidebarIcon,
       },
     },
   },
 });
 
-// Tema escuro
 export const darkTheme = createTheme({
   palette: {
     mode: "dark",
@@ -30,11 +40,13 @@ export const darkTheme = createTheme({
   },
   typography: { fontFamily: "Roboto, Arial, sans-serif" },
   components: {
-    MuiInputLabel: {
-      styleOverrides: {
-        root: { color: "#818181FF" },
-      },
+    MuiInputLabel: { styleOverrides: { root: { color: "#818181FF" } } },
+
+    MuiListItemText: {
+      styleOverrides: { primary: sidebarTypography },
+    },
+    MuiListItemIcon: {
+      styleOverrides: { root: sidebarIcon },
     },
   },
 });
-
