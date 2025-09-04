@@ -5,6 +5,7 @@ import CreateAircraft from "../pages/Aircrafts/Create";
 import CreateOrder from "../pages/Orders/Create";
 import ListAircrafts from "../pages/Aircrafts/List";
 import ProfilePage from "../pages/Profile";
+import Site from "../pages/Site";
 
 export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>) =>
   createBrowserRouter([
@@ -17,6 +18,12 @@ export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.
         { path: "aeronaves/listar", element: <ListAircrafts /> },
         { path: "ordens/criar", element: <CreateOrder /> },
         { path: "perfil", element: <ProfilePage /> },
+      ],
+    },
+      {
+      path: "/home",
+      element: <Site />,
+      children: [
       ],
     },
   ]);
