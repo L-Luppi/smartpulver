@@ -7,8 +7,6 @@ import ListAircrafts from "../pages/Aircrafts/List";
 import ProfilePage from "../pages/Profile";
 import Site from "../pages/Site";
 
-import Teste from "../pages/Teste.tsx"
-
 export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>) =>
   createBrowserRouter([
     {

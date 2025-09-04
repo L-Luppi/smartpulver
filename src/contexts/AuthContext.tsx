@@ -2,9 +2,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getCurrentUser, signOut, fetchAuthSession } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/data';
+import type { Schema } from "../../amplify/data/resource";
 
 // Use the client without explicit schema typing for now
-const client = generateClient();
+const client = generateClient<Schema>();
 
 interface User {
     id: string;
