@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Box, AppBar, Toolbar } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import { lightTheme, darkTheme } from "../theme";
-import Sidebar from "../components/molecules/SideBar";
+import Sidebar from "../components/organisms/SideBar";
 import AppBarMolecule from "../components/molecules/AppBar";
 import { Dispatch, SetStateAction } from "react";
 

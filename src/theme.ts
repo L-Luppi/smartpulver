@@ -1,53 +1,52 @@
 import { createTheme } from '@mui/material/styles';
 
-// Tema claro
+// Fonte menor para text, ícones maiores
+const sidebarTypography = { fontSize: '0.85rem' }; // 85% do tamanho padrão
+const sidebarIcon = { fontSize: '48px' }; // maior que padrão (24px)
+
 export const lightTheme = createTheme({
   palette: {
-    mode: 'light',
-    primary: {
-      main: '#007BFF',
-      light: '#6CCFFF',
-    },
-    secondary: {
-      main: '#28A745',
-      light: '#82E0AA',
-    },
-    background: {
-      default: '#F5F5F5',
-      paper: '#FFFFFF',
-    },
-    text: {
-      primary: '#101010',
-      secondary: '#6CCFFF',
-    },
+    mode: "light",
+    primary: { main: "#007BFF", light: "#6CCFFF" },
+    secondary: { main: "#28A745", light: "#82E0AA" },
+    background: { default: "#F5F5F5", paper: "#FFFFFF" },
+    text: { primary: "#101010", secondary: "#6CCFFF" },
   },
-  typography: {
-    fontFamily: 'Roboto, Arial, sans-serif',
+  typography: { fontFamily: "Roboto, Arial, sans-serif" },
+  components: {
+    MuiInputLabel: { styleOverrides: { root: { color: "#818181FF" } } },
+
+    // Ajuste global do ListItem
+    MuiListItemText: {
+      styleOverrides: {
+        primary: sidebarTypography,
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: sidebarIcon,
+      },
+    },
   },
 });
 
-// Tema escuro
 export const darkTheme = createTheme({
   palette: {
-    mode: 'dark',
-    primary: {
-      main: '#007BFF',
-      light: '#6CCFFF',
-    },
-    secondary: {
-      main: '#28A745',
-      light: '#82E0AA',
-    },
-    background: {
-      default: '#101010',
-      paper: '#1C1C1C',
-    },
-    text: {
-      primary: '#F5F5F5',
-      secondary: '#82E0AA',
-    },
+    mode: "dark",
+    primary: { main: "#007BFF", light: "#6CCFFF" },
+    secondary: { main: "#28A745", light: "#82E0AA" },
+    background: { default: "#101010", paper: "#1C1C1C" },
+    text: { primary: "#F5F5F5", secondary: "#82E0AA" },
   },
-  typography: {
-    fontFamily: 'Roboto, Arial, sans-serif',
+  typography: { fontFamily: "Roboto, Arial, sans-serif" },
+  components: {
+    MuiInputLabel: { styleOverrides: { root: { color: "#818181FF" } } },
+
+    MuiListItemText: {
+      styleOverrides: { primary: sidebarTypography },
+    },
+    MuiListItemIcon: {
+      styleOverrides: { root: sidebarIcon },
+    },
   },
 });

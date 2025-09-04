@@ -59,7 +59,7 @@ export default function PieChartWidget({
             }
             labelLine={false}
           >
-            {data.map((entry, index) => (
+            {data.map((__, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={colors[index % colors.length]}

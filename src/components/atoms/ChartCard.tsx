@@ -6,7 +6,7 @@ interface ChartCardProps {
   children: ReactNode;
 }
 
-export default function ChartCard({ title, children }: ChartCardProps) {
+export default function ChartCard({ children }: ChartCardProps) {
   return (
     <Card>
       <CardContent>
