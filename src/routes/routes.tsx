@@ -6,9 +6,14 @@ import CreateOrder from "../pages/Orders/Create";
 import ListAircrafts from "../pages/Aircrafts/List";
 import ProfilePage from "../pages/Profile";
 import Site from "../pages/Site";
+import Login from "../login";
 
 export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>) =>
   createBrowserRouter([
+    {
+      path: "/login",
+      element: <Login />,
+    },
     {
       path: "/",
       element: <DefaultLayout isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />,

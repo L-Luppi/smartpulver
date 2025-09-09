@@ -1,12 +1,12 @@
 import { useAuth } from "react-oidc-context";
 
-function App() {
+function Login() {
   const auth = useAuth();
 
   const signOutRedirect = () => {
-    const clientId = "487fp732b2melvfqr454o1bq97";
-    const logoutUri = "<logout uri>";
-    const cognitoDomain = "https://<user pool domain>";
+    const clientId = import.meta.env.USER_POOL_CLIENT_ID;
+    const logoutUri = import.meta.env.LOGOUT_URI;
+    const cognitoDomain = import.meta.env.COGNITO_DOMAIN;
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };
 
@@ -39,4 +39,4 @@ function App() {
   );
 }
 
-export default App;
+export default Login;
