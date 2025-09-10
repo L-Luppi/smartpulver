@@ -52,6 +52,7 @@ export default function Hero() {
                 color: "#fff",
                 "&:hover": { backgroundColor: "#e68900" },
               }}
+              href="/login"
             >
               Login
             </Button>

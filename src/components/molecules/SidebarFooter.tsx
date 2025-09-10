@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Box, Divider, List } from "@mui/material";
-// import { useAuthenticator } from "@aws-amplify/ui-react";
-import { useAuth } from "react-oidc-context";
 import UserAvatarButton from "./UserAvatarButton";
 import UserDropdownMenu from "../molecules/UserDropdownMenu";
 
@@ -16,10 +14,15 @@ export default function SidebarFooter() {
 
 const signOutRedirect = () => {
   const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
-  const logoutUri = import.meta.env.VITE_COGNITO_REDIRECT_URI;
   const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
+  const postLogoutRedirect = import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI;
 
-  window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+  window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+    postLogoutRedirect
+  )}`;
+
+   localStorage.clear();  // limpa todos os tokens salvos
+  sessionStorage.clear();
 };
 
   return (
