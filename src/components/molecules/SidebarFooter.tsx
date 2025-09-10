@@ -21,7 +21,7 @@ const signOutRedirect = () => {
     postLogoutRedirect
   )}`;
 
-   localStorage.clear();  // limpa todos os tokens salvos
+   localStorage.clear(); 
   sessionStorage.clear();
 };
 
