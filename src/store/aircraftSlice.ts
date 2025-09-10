@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import getAccessToken from "../services/getAccessToken";
+import { AuthService } from "../services/getAccessToken";
 
 export interface Aircraft {
   id: string;
@@ -28,28 +28,34 @@ const initialState: AircraftState = {
   error: null,
 };
 
-// baseURL do backend (ajuste conforme seu projeto)
+// baseURL do backend (com barra no final no .env)
 const BASE_URL = import.meta.env.VITE_BASE_URL; 
-// ou: process.env.REACT_APP_API_BASE_URL (se não usa Vite)
 
+// 🔹 Função helper para chamadas autenticadas
+async function fetchWithAuth(url: string, options: RequestInit = {}) {
+  const token = AuthService.getAccessToken();
+  console.log("TOKEN:", token);
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+  console.log(headers)
+  const res = await fetch(url, { ...options, headers });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Erro ${res.status}: ${errorText}`);
+  }
+  return res.json();
+}
 // 🔹 Listar aeronaves (com paginação)
 export const fetchAircrafts = createAsyncThunk(
   "aircrafts/fetch",
   async ({ page, rowsPerPage }: { page: number; rowsPerPage: number }) => {
-    const token = await getAccessToken();
-
-    const res = await fetch(`${BASE_URL}drones?page=${page}&limit=${rowsPerPage}`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Erro ${res.status} ao carregar aeronaves`);
-    }
-
-    return res.json();
+    return fetchWithAuth(
+      `${BASE_URL}/drones?page=${page}&limit=${rowsPerPage}`
+    );
   }
 );
 
@@ -57,13 +63,10 @@ export const fetchAircrafts = createAsyncThunk(
 export const addAircraftAsync = createAsyncThunk(
   "aircrafts/add",
   async (aircraft: Omit<Aircraft, "id">) => {
-    const res = await fetch(`${BASE_URL}/drones`, {
+    return fetchWithAuth(`${BASE_URL}/drones`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(aircraft),
     });
-    if (!res.ok) throw new Error("Erro ao adicionar aeronave");
-    return res.json() as Promise<Aircraft>;
   }
 );
 
@@ -71,13 +74,10 @@ export const addAircraftAsync = createAsyncThunk(
 export const editAircraftAsync = createAsyncThunk(
   "aircrafts/edit",
   async (aircraft: Aircraft) => {
-    const res = await fetch(`${BASE_URL}/drones/${aircraft.id}`, {
+    return fetchWithAuth(`${BASE_URL}/drones/${aircraft.id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(aircraft),
     });
-    if (!res.ok) throw new Error("Erro ao editar aeronave");
-    return res.json() as Promise<Aircraft>;
   }
 );
 
@@ -85,8 +85,7 @@ export const editAircraftAsync = createAsyncThunk(
 export const deleteAircraftAsync = createAsyncThunk(
   "aircrafts/delete",
   async (id: string) => {
-    const res = await fetch(`${BASE_URL}/drones/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Erro ao excluir aeronave");
+    await fetchWithAuth(`${BASE_URL}/drones/${id}`, { method: "DELETE" });
     return id;
   }
 );
