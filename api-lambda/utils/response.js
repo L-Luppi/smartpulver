@@ -1,4 +1,3 @@
-// Response utility module - Fixed exports
 'use strict';
 /**
  * Standard CORS headers
@@ -120,14 +119,23 @@ function serverError(err) {
 }
 
 /**
- * Create a CORS preflight response
+ * Create a CORS response - handles both preflight OPTIONS and regular responses
+ * @param {number} statusCode - HTTP status code (optional for OPTIONS)
+ * @param {*} body - Response body (optional for OPTIONS)
  * @returns {Object} Lambda response object
  */
-function corsResponse() {
+function corsResponse(statusCode, body) {
+    if (statusCode === undefined && body === undefined) {
+        return {
+            statusCode: 200,
+            headers: corsHeaders,
+            body: ''
+        };
+    }
     return {
-        statusCode: 200,
+        statusCode,
         headers: corsHeaders,
-        body: JSON.stringify({ message: 'CORS preflight' })
+        body: JSON.stringify(body)
     };
 }
 

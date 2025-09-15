@@ -1,6 +1,6 @@
 const { corsResponse } = require('./utils/response');
 
-// Import all handler modules
+// Handlers para tabelas abertas (publicas)
 const manufacturersHandler = require('./handlers/manufacturers');
 const dronesHandler = require('./handlers/drones');
 const miscHandler = require('./handlers/misc');
@@ -8,8 +8,27 @@ const produtosHandler = require('./handlers/agrofit/produtos');
 const culturasHandler = require('./handlers/agrofit/culturas');
 const pragasHandler = require('./handlers/agrofit/pragas');
 
+//handlers para funções restritas por cliente (tenantID)
+const assinantesHandler = require('./handlers/tenant/assinantes');
+
+//handlers para funções administrativas
+const assinaturasHandler = require('./handlers/smart/assinaturas');
+
 // Route configuration - maps routes to handler functions
+// AJUSTAR RESOURCE {id} no API Gateway para poder fazer GET e POST por {id}
 const routes = {
+    // Planos e Assinaturas
+    'GET /api/v1/smart/assinaturas': assinaturasHandler.getPlanos,
+    'GET /api/v1/smart/assinaturas/{id}': assinaturasHandler.getPlanoById,
+    'POST /api/v1/smart/assinaturas': assinaturasHandler.createPlano,
+    'PUT /api/v1/smart/assinaturas/{id}': assinaturasHandler.updatePlano,
+
+    // Assinantes endpoints
+    'GET /api/v1/tenants/assinantes': assinantesHandler.getAssinantes,
+    'GET /api/v1/tenants/assinantes/{id}': assinantesHandler.getAssinanteById,
+    'POST /api/v1/tenants/assinantes': assinantesHandler.createAssinante,
+    'PUT /api/vi/tenants/assinantes/{id}': assinantesHandler.updateAssinante,
+
     // Manufacturers endpoints
     'GET /api/v1/manufacturers': manufacturersHandler.getManufacturers,
     'GET /api/v1/manufacturers/{id}': manufacturersHandler.getManufacturerById,
@@ -43,6 +62,7 @@ const routes = {
  */
 function matchRoute(requestPath, routePattern) {
     // Convert route pattern to regex (e.g., /api/v1/produtos/{id} -> /api/v1/produtos/([^/]+))
+
     const regexPattern = routePattern.replace(/\{[^}]+\}/g, '([^/]+)');
     const regex = new RegExp(`^${regexPattern}$`);
     const match = requestPath.match(regex);
