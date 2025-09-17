@@ -60,22 +60,58 @@ async function getById(table, id, condition = '', idColumn = 'id') {
     return rows.length > 0 ? rows[0] : null;
 }
 
+async function getCount(table, condition = '', params = []) {
+    try {
+        let query = `SELECT COUNT(*) as total FROM ${table}`;
+
+        if (condition) {
+            query += ` WHERE ${condition}`;
+        }
+
+        const rows = await executeQuery(query, params);
+        return rows[0].total;
+    } catch (error) {
+        console.error('getCount error:', error);
+        throw error;
+    }
+}
+
+// Enhanced getAll with pagination and ordering support
 /**
  * Get all records from a table with optional conditions
  * @param {string} table - Table name
  * @param {string} condition - WHERE condition
  * @param {Array} params - Query parameters
+ * @param {number} limit - Max rows to return
+ * @param {number} offset - Number of rows to skip
  * @param {string} orderBy - ORDER BY clause
  * @returns {Promise<Array>} Array of records
  */
-async function getAll(table, condition = '', params = [], orderBy = '') {
-    let query = `SELECT * FROM ${table}`;
-    if (condition) {
-        query += ` WHERE ${condition}`;
-    }
-    query += ` ORDER BY ${orderBy}`;
+async function getAll(table, condition = '', params = [], limit = null, offset = 0, orderBy = 'id ASC') {
+    try {
+        let query = `SELECT * FROM ${table}`;
 
-    return await executeQuery(query, params);
+        if (condition) {
+            query += ` WHERE ${condition}`;
+        }
+
+        // Add ordering (always include for consistent results)
+        query += ` ORDER BY ${orderBy}`;
+
+        // Add pagination if limit is specified
+        if (limit) {
+            query += ` LIMIT ${limit}`;
+            if (offset > 0) {
+                query += ` OFFSET ${offset}`;
+            }
+        }
+
+        const rows = await executeQuery(query, params);
+        return rows;
+    } catch (error) {
+        console.error('getAll error:', error);
+        throw error;
+    }
 }
 
 /**
@@ -85,23 +121,22 @@ async function getAll(table, condition = '', params = [], orderBy = '') {
  * @returns {Promise<Object>} Insert result
  */
 async function insert(table, data) {
-    const columns = Object.keys(data).join(', ');
-    const placeholders = Object.keys(data).map(() => '?').join(', ');
-    const values = Object.values(data);
-
-    const query = `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`;
-
     try {
-        const connection = getPool();
-        const [result] = await connection.execute(query, values);
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        const placeholders = fields.map(() => '?').join(', ');
 
-        return {
-            insertId: result.insertId,
-            affectedRows: result.affectedRows
-        };
+        const query = `INSERT INTO ${table} (${fields.join(', ')}) VALUES (${placeholders})`;
+        const result = await executeQuery(query, values);
+
+        // Return the inserted record
+        if (result.insertId) {
+            return await getById(table, result.insertId);
+        }
+        return result;
     } catch (error) {
-        console.error('Database insert error:', error);
-        throw new Error(`Database insert error: ${error.message}`);
+        console.error('insert error:', error);
+        throw error;
     }
 }
 
@@ -112,22 +147,21 @@ async function insert(table, data) {
  * @param {Object} data - Data to update
  * @returns {Promise<Object>} Update result
  */
-async function updateById(table, id, data) {
-    const setClause = Object.keys(data).map(key => `${key} = ?`).join(', ');
-    const values = [...Object.values(data), id];
 
-    const query = `UPDATE ${table} SET ${setClause} WHERE id = ?`;
-
+async function updateById(table, id, data, idColumn = 'id') {
     try {
-        const connection = getPool();
-        const [result] = await connection.execute(query, values);
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
 
-        return {
-            affectedRows: result.affectedRows
-        };
+        const query = `UPDATE ${table} SET ${setClause} WHERE ${idColumn} = ?`;
+        await executeQuery(query, [...values, id]);
+
+        // Return the updated record
+        return await getById(table, id, '', idColumn);
     } catch (error) {
-        console.error('Database update error:', error);
-        throw new Error(`Database update error: ${error.message}`);
+        console.error('updateById error:', error);
+        throw error;
     }
 }
 
@@ -159,6 +193,7 @@ module.exports = {
     executeQuery,
     getById,
     getAll,
+    getCount,
     insert,
     updateById,
     deleteById
