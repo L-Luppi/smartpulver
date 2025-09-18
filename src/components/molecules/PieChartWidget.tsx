@@ -6,6 +6,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  PieLabelRenderProps,
 } from "recharts";
 
 interface PieChartWidgetProps {
@@ -54,9 +55,10 @@ export default function PieChartWidget({
             cy="50%"
             outerRadius="80%" // usar percentual
             dataKey="value"
-            label={({ name, percent = 0 }) =>
-              `${name} ${(percent * 100).toFixed(0)}%`
-            }
+           label={({ name, percent }: PieLabelRenderProps) =>
+  `${name} ${((percent as number) * 100).toFixed(0)}%`
+}
+
             labelLine={false}
           >
             {data.map((__, index) => (
