@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AircraftList from "../../components/organisms/AircraftList";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { fetchAircrafts, deleteAircraftAsync } from "../../store/aircraftSlice";
+import { fetchManufacturers } from "../../store/manufacturerSlice";
 
 export default function ListAircrafts() {
   const dispatch = useAppDispatch();
@@ -19,6 +20,7 @@ export default function ListAircrafts() {
   useEffect(() => {
     if (!initialized.current) {
       dispatch(fetchAircrafts({ page, rowsPerPage }));
+      dispatch(fetchManufacturers({ page: 1, rowsPerPage: 10 }));
       initialized.current = true;
     }
   }, [dispatch, page, rowsPerPage]);
