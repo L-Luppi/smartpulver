@@ -10,6 +10,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Stack,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -133,30 +134,35 @@ export default function Hero() {
               simplifica a gestão e acompanha tudo em tempo real — direto na
               palma da sua mão.
             </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              sx={{
-                mr: 2,
-                mb: { xs: 2, md: 0 },
-                backgroundColor: "#FF9800",
-                color: "#fff",
-                "&:hover": { backgroundColor: "#e68900" },
-              }}
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2} // espaço entre os botões
+              justifyContent={{ xs: "center", md: "flex-start" }}
+              mb={4}
             >
-              Assine Agora
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              sx={{
-                color: "#fff",
-                borderColor: "#fff",
-                "&:hover": { backgroundColor: "#fff", color: "#000" },
-              }}
-            >
-              Saiba Mais
-            </Button>
+              <Button
+                variant="contained"
+                size="large"
+                sx={{
+                  backgroundColor: "#FF9800",
+                  color: "#fff",
+                  "&:hover": { backgroundColor: "#e68900" },
+                }}
+              >
+                Assine Agora
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                sx={{
+                  color: "#fff",
+                  borderColor: "#fff",
+                  "&:hover": { backgroundColor: "#fff", color: "#000" },
+                }}
+              >
+                Saiba Mais
+              </Button>
+            </Stack>
           </Box>
 
           {/* Drone animado */}

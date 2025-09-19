@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,8 @@ import {
   CardContent,
   useTheme,
   useMediaQuery,
+  MobileStepper,
+  styled,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
@@ -77,9 +79,23 @@ const guarantees = [
   { text: "Satisfação Garantida", icon: <SentimentSatisfiedAltIcon /> },
 ];
 
+// Custom MobileStepper sem botões
+const DotsStepper = styled(MobileStepper)({
+  ".MuiMobileStepper-dot": {
+    width: 10,
+    height: 10,
+    margin: "0 4px",
+    backgroundColor: "#c4c4c4",
+  },
+  ".MuiMobileStepper-dotActive": {
+    backgroundColor: "#1976d2",
+  },
+});
+
 export default function Pricing() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [activeStep, setActiveStep] = useState(0);
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -87,11 +103,11 @@ export default function Pricing() {
         Nossos Planos
       </Typography>
 
-      {/* Grid Desktop */}
+      {/* Desktop */}
       {!isMobile && (
         <Grid container spacing={4} justifyContent="center">
           {plans.map((plan) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={plan.name}>
+            <Grid size={{ xs: 12, md: 4 }} key={plan.name}>
               <Card
                 elevation={4}
                 sx={{
@@ -103,85 +119,41 @@ export default function Pricing() {
                   "&:hover": { transform: "translateY(-8px)", boxShadow: 6 },
                 }}
               >
-                {plan.highlight && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 16,
-                      left: 16,
-                      bgcolor: "secondary.main",
-                      color: "white",
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: "12px",
-                      fontSize: "0.75rem",
-                      fontWeight: "bold",
-                    }}
+                <CardContent sx={{ textAlign: "center", p: 4, flexGrow: 1 }}>
+                  <Typography
+                    variant="h5"
+                    fontWeight="bold"
+                    color={`${plan.color}.main`}
                   >
-                    MAIS ESCOLHIDO
-                  </Box>
-                )}
-
-                {plan.highlight && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 20,
-                      right: -40,
-                      transform: "rotate(45deg)",
-                      bgcolor: "error.main",
-                      color: "white",
-                      px: 10,
-                      py: 0.5,
-                      fontWeight: "bold",
-                      fontSize: "0.75rem",
-                    }}
-                  >
-                    20% OFF
-                  </Box>
-                )}
-
-                <CardContent sx={{ textAlign: "center", p: 4, flexGrow: 1, marginTop: 2 }}>
-                  <Typography variant="h5" fontWeight="bold" color={`${plan.color}.main`} gutterBottom>
                     {plan.name}
                   </Typography>
-                  <Typography variant="subtitle1" gutterBottom>
-                    {plan.subtitle}
-                  </Typography>
-                  {plan.oldPrice && (
-                    <Typography
-                      variant="body2"
-                      sx={{ textDecoration: "line-through" }}
-                      color="text.secondary"
-                    >
-                      {plan.oldPrice}
-                    </Typography>
-                  )}
-                  <Typography variant="h4" fontWeight="bold" color={`${plan.color}.main`}>
+                  <Typography variant="subtitle1">{plan.subtitle}</Typography>
+                  <Typography variant="h4" color={`${plan.color}.main`}>
                     {plan.price}
                   </Typography>
-                  <Typography variant="subtitle1" gutterBottom>
-                    {plan.per}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
+                  <Typography variant="subtitle2">{plan.per}</Typography>
+                  <Typography variant="body2" color="text.primary" mb={2}>
                     {plan.description}
                   </Typography>
                   {plan.savings && (
-                    <Typography variant="body2" color="success.main" mb={2}>
-                      {plan.savings}
-                    </Typography>
+                    <Typography color="success.main">{plan.savings}</Typography>
                   )}
 
-                  <Box textAlign="left" mb={2}>
+                  <Box textAlign="left" mt={2}>
                     {plan.features.map((f) => (
                       <Typography
                         key={f}
                         display="flex"
                         alignItems="center"
-                        mb={0.5}
                         fontSize="0.875rem"
+                        mb={0.5}
                       >
-                        <CheckCircleIcon color="success" sx={{ mr: 1 }} fontSize="small" /> {f}
+                        <CheckCircleIcon
+                          color="success"
+                          sx={{ mr: 1 }}
+                          fontSize="small"
+                        />
+                        {f}
                       </Typography>
                     ))}
                   </Box>
@@ -197,71 +169,101 @@ export default function Pricing() {
         </Grid>
       )}
 
-      {/* Mobile: Carrossel simples */}
+      {/* Mobile com dots apenas */}
       {isMobile && (
-        <Box
-          sx={{
-            display: "flex",
-            overflowX: "auto",
-            gap: 2,
-            px: 2,
-            scrollSnapType: "x mandatory",
-            "& > div": { scrollSnapAlign: "start" },
-          }}
-        >
-          {plans.map((plan) => (
-            <Box key={plan.name} sx={{ minWidth: 280, flex: "0 0 auto" }}>
-              <Card elevation={4} sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                <CardContent sx={{ textAlign: "center", p: 3, flexGrow: 1 }}>
-                  <Typography variant="h6" fontWeight="bold" color={`${plan.color}.main`} gutterBottom>
-                    {plan.name}
+        <Box>
+          <Card
+            elevation={4}
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              textAlign: "center",
+              p: 3,
+              mb: 2,
+            }}
+          >
+            <CardContent>
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                color={`${plans[activeStep].color}.main`}
+              >
+                {plans[activeStep].name}
+              </Typography>
+              <Typography variant="subtitle1">
+                {plans[activeStep].subtitle}
+              </Typography>
+              <Typography variant="h5" color={`${plans[activeStep].color}.main`}>
+                {plans[activeStep].price}
+              </Typography>
+              <Typography variant="subtitle2">{plans[activeStep].per}</Typography>
+              <Typography variant="body2" color="text.primary" mb={2}>
+                {plans[activeStep].description}
+              </Typography>
+              {plans[activeStep].savings && (
+                <Typography color="success.main">
+                  {plans[activeStep].savings}
+                </Typography>
+              )}
+              <Box textAlign="left" mt={2}>
+                {plans[activeStep].features.map((f) => (
+                  <Typography
+                    key={f}
+                    display="flex"
+                    alignItems="center"
+                    fontSize="0.875rem"
+                    mb={0.5}
+                  >
+                    <CheckCircleIcon
+                      color="success"
+                      sx={{ mr: 1 }}
+                      fontSize="small"
+                    />
+                    {f}
                   </Typography>
-                  <Typography variant="subtitle1" gutterBottom fontSize="0.9rem">
-                    {plan.subtitle}
-                  </Typography>
-                  <Typography variant="h5" fontWeight="bold" color={`${plan.color}.main`}>
-                    {plan.price}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom fontSize="0.8rem">
-                    {plan.per}
-                  </Typography>
-                  <Box textAlign="left" mt={1} mb={2}>
-                    {plan.features.map((f) => (
-                      <Typography
-                        key={f}
-                        display="flex"
-                        alignItems="center"
-                        fontSize="0.75rem"
-                        mb={0.5}
-                      >
-                        <CheckCircleIcon color="success" sx={{ mr: 0.5 }} fontSize="small" /> {f}
-                      </Typography>
-                    ))}
-                  </Box>
-                  <Button variant="contained" color={plan.color as any} fullWidth>
-                    {plan.button}
-                  </Button>
-                </CardContent>
-              </Card>
+                ))}
+              </Box>
+            </CardContent>
+            <Box sx={{ p: 2 }}>
+              <Button
+                variant="contained"
+                color={plans[activeStep].color as any}
+                fullWidth
+              >
+                {plans[activeStep].button}
+              </Button>
             </Box>
-          ))}
-        </Box>
+          </Card>
+
+        {/* Dots clicáveis */}
+    <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mt: 1 }}>
+      {plans.map((_, index) => (
+        <Box
+          key={index}
+          sx={{
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            bgcolor: index === activeStep ? "primary.main" : "grey.400",
+            cursor: "pointer",
+          }}
+          onClick={() => setActiveStep(index)}
+        />
+      ))}
+    </Box>
+  </Box>
       )}
 
-      {/* Linha de garantias */}
-      <Grid
-        container
-        spacing={2}
-        justifyContent="center"
-        sx={{ mt: 4 }}
-        direction={isMobile ? "column" : "row"}
-        alignItems="center"
-      >
+      {/* Garantias */}
+      <Grid container spacing={2} justifyContent="center" sx={{ mt: 4 }}>
         {guarantees.map((g) => (
-          <Grid size={{ xs: 6, md: 3 }} key={g.text}>
+          <Grid size={{ xs: 12, md: 3 }} key={g.text}>
             <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
               {React.cloneElement(g.icon, { fontSize: isMobile ? "small" : "large" })}
-              <Typography fontSize={isMobile ? "0.5rem" : "0.9rem"}>{g.text}</Typography>
+              <Typography fontSize={isMobile ? "0.75rem" : "0.9rem"}>
+                {g.text}
+              </Typography>
             </Box>
           </Grid>
         ))}
