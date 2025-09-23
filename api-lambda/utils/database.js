@@ -7,10 +7,14 @@ const dbConfig = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
+    // Pool settings
+    waitForConnections: true,
     connectionLimit: 10,
+    queueLimit: 0,
     acquireTimeout: 60000,
+    //connections settings
     timeout: 60000,
-    reconnect: true
+    charset: 'utf8mb4',
 };
 
 // Connection pool
@@ -21,7 +25,7 @@ let pool = null;
  */
 function getPool() {
     if (!pool) {
-        console.log('Creating new database connection pool');
+        // console.log('Creating new database connection pool');
         pool = mysql.createPool(dbConfig);
     }
     return pool;
@@ -36,7 +40,6 @@ function getPool() {
 async function executeQuery(query, params = []) {
     try {
         const connection = getPool();
-        console.log('Executing query:', query, 'with params:', params);
         const [rows] = await connection.execute(query, params);
         return rows;
     } catch (error) {
@@ -105,9 +108,10 @@ async function getAll(table, condition = '', params = [], limit = null, offset =
                 query += ` OFFSET ${offset}`;
             }
         }
+        //const rows = await executeQuery(query, params);
+        //return rows;
+        return await executeQuery(query, params);
 
-        const rows = await executeQuery(query, params);
-        return rows;
     } catch (error) {
         console.error('getAll error:', error);
         throw error;
@@ -145,6 +149,7 @@ async function insert(table, data) {
  * @param {string} table - Table name
  * @param {number|string} id - Record ID
  * @param {Object} data - Data to update
+ * @param {string} idColumn - Coluna chave
  * @returns {Promise<Object>} Update result
  */
 
