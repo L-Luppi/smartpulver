@@ -8,14 +8,64 @@ export default function LoginCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (auth.isAuthenticated) {
-      navigate("/");
-    }
-  }, [navigate, auth]);
+    const checkSubscription = async () => {
+      if (!auth.isAuthenticated) return;
+
+      const planId = (auth.user?.state as { planId?: string })?.planId;
+      const idToken = auth.user?.id_token;
+
+      try {
+        // 🔹 Verifica se o usuário já tem assinatura
+        const res = await fetch("/me/subscription", {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+
+        const data = await res.json();
+
+        if (data.hasActiveSubscription) {
+          // Já tem assinatura → vai pro app
+          navigate("/dashboard");
+        } else {
+          // Não tem assinatura → cria checkout no Stripe
+          const checkoutRes = await fetch("/create-checkout-session", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ priceId: planId }),
+          });
+
+          const checkoutData = await checkoutRes.json();
+          if (checkoutData.url) {
+            window.location.href = checkoutData.url;
+          }
+        }
+       } catch (err) {
+        console.error("Erro ao verificar assinatura:", err);
+        // fallback: mesmo com erro → manda pro checkout com plano padrão
+        const checkoutRes = await fetch("/create-checkout-session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({ priceId: "price_1MENSALxxxx" }),
+        });
+        const checkoutData = await checkoutRes.json();
+        if (checkoutData.url) {
+          window.location.href = checkoutData.url;
+        }
+      }
+    };
+
+    checkSubscription();
+  }, [auth, navigate]);
 
   if (auth.isLoading) {
     return <div>Processando login...</div>;
   }
+
   if (auth.error) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center">
@@ -30,15 +80,10 @@ export default function LoginCallback() {
     );
   }
 
-  if (!auth.isAuthenticated && !auth.isLoading) {
-    auth.signinRedirect();
-  }
-
-  // 🔹 Loader com imagem animada
   return (
     <div className="flex items-center justify-center h-screen">
       <img
-        src={droneImg} // 👉 coloque sua imagem em public/loader.png
+        src={droneImg}
         alt="Redirecionando..."
         className="w-20 h-20 animate-bounce"
       />

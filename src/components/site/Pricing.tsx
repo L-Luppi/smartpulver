@@ -17,6 +17,7 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import PaymentIcon from "@mui/icons-material/Payment";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
+import { useAuth } from "react-oidc-context";
 
 const plans = [
   {
@@ -25,6 +26,7 @@ const plans = [
     price: "R$ 149,99",
     per: "/mês",
     description: "Sem compromisso de longo prazo",
+    priceId: "price_1MENSALxxxx",
     features: [
       "Geração automática dos relatórios",
       "Gestão de clientes, funcionários e produtos",
@@ -44,6 +46,7 @@ const plans = [
     oldPrice: "R$ 149,99/mês",
     description: "Cobrança anual de R$ 1439,84",
     savings: "💰 Economize R$ 360 por ano!",
+    priceId: "price_1ANUALxxxx",
     features: [
       "Geração automática dos relatórios",
       "Gestão de clientes, funcionários e produtos",
@@ -61,6 +64,7 @@ const plans = [
     subtitle: "Solução sob medida",
     price: "Sob consulta",
     per: "",
+    priceId: "",
     description: "Escolha os recursos que precisa",
     features: [
       "Pacotes adaptados ao seu negócio",
@@ -96,6 +100,44 @@ export default function Pricing() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [activeStep, setActiveStep] = useState(0);
+
+  const auth = useAuth();
+
+  const handleSubscribe = async (priceId: string) => {
+    if (!priceId) {
+      // Plano personalizado → fale conosco
+      window.location.href = "/contato";
+      return;
+    }
+
+    if (!auth.isAuthenticated) {
+      // se não logado → manda para login e guarda o plano
+      auth.signinRedirect({ state: { planId: priceId } });
+      return;
+    }
+
+    try {
+      const idToken = auth.user?.id_token;
+
+      const res = await fetch("/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ priceId }),
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Erro ao criar checkout:", err);
+    }
+  };
+
+
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -159,7 +201,7 @@ export default function Pricing() {
                   </Box>
                 </CardContent>
                 <Box sx={{ p: 2 }}>
-                  <Button variant="contained" color={plan.color as any} fullWidth>
+                  <Button variant="contained" color={plan.color as any} fullWidth onClick={() => handleSubscribe(plans[activeStep].priceId)} >
                     {plan.button}
                   </Button>
                 </Box>
@@ -230,6 +272,7 @@ export default function Pricing() {
                 variant="contained"
                 color={plans[activeStep].color as any}
                 fullWidth
+                onClick={() => handleSubscribe(plans[activeStep].priceId)}
               >
                 {plans[activeStep].button}
               </Button>
