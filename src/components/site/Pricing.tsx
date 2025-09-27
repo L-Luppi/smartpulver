@@ -9,8 +9,6 @@ import {
   CardContent,
   useTheme,
   useMediaQuery,
-  MobileStepper,
-  styled,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
