@@ -77,20 +77,9 @@ const DEFAULT_FAQ: FaqItem[] = [
   },
 ];
 
-export default function Faq({ items = DEFAULT_FAQ }: { items?: FaqItem[] }) {
-  const [search, setSearch] = useState("");
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [allOpen, setAllOpen] = useState(false);
+export default function Faq() {
 
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return items;
-    return items.filter(
-      (i) =>
-        i.question.toLowerCase().includes(term) ||
-        i.answer.toLowerCase().includes(term)
-    );
-  }, [search, items]);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   function handleToggle(id: string) {
     setExpanded((prev) => (prev === id ? null : id));
@@ -112,10 +101,10 @@ export default function Faq({ items = DEFAULT_FAQ }: { items?: FaqItem[] }) {
         </header>
         <main>
          
-            {filtered.map((item) => (
+            {DEFAULT_FAQ.map((item) => (
               <Accordion
                 key={item.id}
-                expanded={allOpen ? true : expanded === item.id}
+                expanded={expanded === item.id}
                 onChange={() => handleToggle(item.id)}
                 className="mb-3"
               >

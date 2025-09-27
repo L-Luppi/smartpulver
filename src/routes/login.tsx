@@ -27,6 +27,7 @@ export default function LoginCallback() {
           navigate("/dashboard");
         } else {
           // Não tem assinatura → cria checkout no Stripe
+          console.log('aqui')
           const checkoutRes = await fetch("/create-checkout-session", {
             method: "POST",
             headers: {
@@ -35,7 +36,7 @@ export default function LoginCallback() {
             },
             body: JSON.stringify({ priceId: planId }),
           });
-
+          console.log(checkoutRes)
           const checkoutData = await checkoutRes.json();
           if (checkoutData.url) {
             window.location.href = checkoutData.url;

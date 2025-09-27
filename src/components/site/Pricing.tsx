@@ -83,19 +83,6 @@ const guarantees = [
   { text: "Satisfação Garantida", icon: <SentimentSatisfiedAltIcon /> },
 ];
 
-// Custom MobileStepper sem botões
-const DotsStepper = styled(MobileStepper)({
-  ".MuiMobileStepper-dot": {
-    width: 10,
-    height: 10,
-    margin: "0 4px",
-    backgroundColor: "#c4c4c4",
-  },
-  ".MuiMobileStepper-dotActive": {
-    backgroundColor: "#1976d2",
-  },
-});
-
 export default function Pricing() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
