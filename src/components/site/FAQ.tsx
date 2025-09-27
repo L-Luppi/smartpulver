@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Container,
   Box,
@@ -6,17 +6,10 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
-  IconButton,
-  TextField,
-  Button,
-  Tooltip,
+
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import SearchIcon from "@mui/icons-material/Search";
-import OpenInFullIcon from "@mui/icons-material/OpenInFull";
-import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 
-// Tipagem da FAQ
 interface FaqItem {
   id: string;
   question: string;
