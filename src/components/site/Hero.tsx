@@ -15,9 +15,11 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import drone from "../../assets/drone.png";
+import { useAuth } from "react-oidc-context";
 
 export default function Hero() {
   const [openMenu, setOpenMenu] = useState(false);
+ const auth = useAuth();
 
   return (
     <Box
@@ -53,7 +55,7 @@ export default function Hero() {
                 color: "#fff",
                 "&:hover": { backgroundColor: "#e68900" },
               }}
-              href="/login"
+              onClick={() => auth.signinRedirect()} 
             >
               Login
             </Button>
@@ -91,6 +93,7 @@ export default function Hero() {
                   color: "#fff",
                   "&:hover": { backgroundColor: "#e68900" },
                 }}
+                onClick={() => auth.signinRedirect()} 
               >
                 Login
               </Button>

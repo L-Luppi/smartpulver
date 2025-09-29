@@ -1,7 +1,7 @@
 import { useAuth } from "react-oidc-context";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import droneImg from "../assets/drone.png";
+import { Box, CircularProgress } from "@mui/material";
 
 export default function LoginCallback() {
   const auth = useAuth();
@@ -11,52 +11,30 @@ export default function LoginCallback() {
     const checkSubscription = async () => {
       if (!auth.isAuthenticated) return;
 
-      const planId = (auth.user?.state as { planId?: string })?.planId;
       const idToken = auth.user?.id_token;
 
       try {
         // 🔹 Verifica se o usuário já tem assinatura
-        const res = await fetch("/me/subscription", {
+        const res = await fetch("/stripe/webhook", {
           headers: { Authorization: `Bearer ${idToken}` },
         });
-
+        console.log(res)
         const data = await res.json();
-
+        console.log(data)
         if (data.hasActiveSubscription) {
           // Já tem assinatura → vai pro app
           navigate("/dashboard");
         } else {
-          // Não tem assinatura → cria checkout no Stripe
-          console.log('aqui')
-          const checkoutRes = await fetch("/create-checkout-session", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({ priceId: planId }),
-          });
-          console.log(checkoutRes)
-          const checkoutData = await checkoutRes.json();
-          if (checkoutData.url) {
-            window.location.href = checkoutData.url;
-          }
+          // Não tem assinatura → manda direto pro Payment Link do Stripe
+          console.log('aqui');
+          window.location.href =
+            "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
         }
-       } catch (err) {
-        console.error("Erro ao verificar assinatura:", err);
-        // fallback: mesmo com erro → manda pro checkout com plano padrão
-        const checkoutRes = await fetch("/create-checkout-session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({ priceId: "price_1MENSALxxxx" }),
-        });
-        const checkoutData = await checkoutRes.json();
-        if (checkoutData.url) {
-          window.location.href = checkoutData.url;
-        }
+      } catch (err) {
+        // fallback → também manda pro Payment Link
+        console.log('aqui2')
+        window.location.href =
+          "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
       }
     };
 
@@ -82,12 +60,15 @@ export default function LoginCallback() {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <img
-        src={droneImg}
-        alt="Redirecionando..."
-        className="w-20 h-20 animate-bounce"
-      />
-    </div>
+     <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
   );
 }
