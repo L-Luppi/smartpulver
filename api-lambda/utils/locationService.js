@@ -32,7 +32,7 @@ async function getLocationByCodigoIBGE(codigo_cidade_ibge) {
  * @param {string} cityCode - Field name containing city code (default: 'city_code')
  * @returns {Array} Records enriched with location data
  */
-async function getLocationData(registros, cityCode = 'id_cidadesIBGE') {
+async function getLocationData(registros, cityCode = 'id_cidade_ibge') {
     if (!registros) return registros;
 
     const isArray = Array.isArray(registros);
@@ -67,6 +67,7 @@ async function getLocationData(registros, cityCode = 'id_cidadesIBGE') {
             const locationMap = {};
             locationData.forEach(location => {
                 locationMap[location.codigo_ibge] = {
+                    codigo: location.codigo_ibge,
                     cidade: location.nome_cidade,
                     uf: location.uf_sigla,
                     uf_nome: location.uf_nome,
@@ -92,8 +93,30 @@ async function getLocationData(registros, cityCode = 'id_cidadesIBGE') {
     }
 }
 
+function extractCityCode(locationData) {
+    if (!locationData) return null;
+
+    // Direct number/string
+    if (typeof locationData === 'number' ||
+        (typeof locationData === 'string' && !isNaN(locationData))) {
+        return parseInt(locationData);
+    }
+
+    // Object with various possible structures
+    if (typeof locationData === 'object') {
+        return locationData.codigo_ibge ||
+            locationData.codigo ||
+            locationData.cidade?.codigo ||
+            locationData.cidade?.codigo_ibge ||
+            locationData.codigo_ibge ||
+            null;
+    }
+    return null;
+}
+
 module.exports = {
     getLocationByCodigoIBGE,
+    extractCityCode,
     getLocationData
 };
 

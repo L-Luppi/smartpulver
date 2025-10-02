@@ -7,6 +7,7 @@ const miscHandler = require('./handlers/misc');
 const produtosHandler = require('./handlers/agrofit/produtos');
 const culturasHandler = require('./handlers/agrofit/culturas');
 const pragasHandler = require('./handlers/agrofit/pragas');
+const stripeHandlers = require('./handlers/stripe/stripe');
 
 //handlers para funções restritas por cliente (tenantID)
 const assinantesHandler = require('./handlers/tenant/assinantes');
@@ -14,7 +15,10 @@ const assinantesHandler = require('./handlers/tenant/assinantes');
 //handlers para funções administrativas
 const assinaturasHandler = require('./handlers/smart/assinaturas');
 const planosHandler = require('./handlers/smart/planos');
-const IBGEHandler = require('./handlers/cidadesIBGE')
+const IBGEHandler = require('./handlers/cidadesIBGE');
+
+// in case new versions are implemented just adjust this for proxy routes
+const API_PREFIX = 'api/v1/';
 
 const routes = {
     // Gerais
@@ -39,6 +43,14 @@ const routes = {
     'GET tenants/assinantes/{id}': assinantesHandler.getAssinanteById,
     'POST tenants/assinantes': assinantesHandler.createAssinante,
     'PUT tenants/assinantes/{id}': assinantesHandler.updateAssinante,
+
+    // Stripe endpoits
+    'POST stripe/products': stripeHandlers.createProduct,
+    'POST stripe/prices': stripeHandlers.createPrice,
+    'GET stripe/products': stripeHandlers.listStripeProducts,
+    'POST stripe/checkout': stripeHandlers.checkout,
+    'POST stripe/webhook': stripeHandlers.webhook,
+
 
     // Manufacturers endpoints
     'GET manufacturers': manufacturersHandler.getManufacturers,
@@ -72,8 +84,20 @@ const routes = {
  * @returns {Object} Match result with path parameters
  */
 function matchRoute(method, proxy) {
-    // remove 'api/v1' prefix from proxy for route matching
-    const cleanPath = proxy.replace(/^api\/v1\//, '');
+//    let cleanPath = proxy;
+//    const pathIndex = proxy.indexOf(API_PREFIX);
+//    if (pathIndex !== -1) {
+//        cleanPath = proxy.substring(pathIndex + API_PREFIX.length);
+    let cleanPath = proxy;
+    const apiPathIndex = proxy.indexOf(API_PREFIX);
+    if (apiPathIndex !== -1) {
+        cleanPath = proxy.substring(apiPathIndex + API_PREFIX.length);
+    }
+    if (cleanPath.length > 1 && cleanPath.endsWith('/')) {
+        //console.log(`cleanPath = ${cleanPath} ... removing trailing slash... `)
+        cleanPath = cleanPath.slice(0, -1);
+    }
+    //console.log(`[matchRoute] Attempting to match method= '${method}' with cleanPath='${cleanPath}`);
 
     // Try exact match first
     const exactKey = `${method} ${cleanPath}`;
@@ -111,11 +135,8 @@ function matchRoute(method, proxy) {
  * @returns {Promise<Object>} HTTP response object
  */
 exports.handler = async (event) => {
-    const proxy = event.pathParameters?.proxy || '';
+    const pathForRouting = event.path || (event.pathParameters?.proxy || '');
     const method = event.httpMethod;
-
-    console.log(`${method} /${proxy}`);
-    console.log('Full proxy:', JSON.stringify(proxy));
 
     // Handle CORS preflight requests
     if (method === 'OPTIONS') {
@@ -123,12 +144,12 @@ exports.handler = async (event) => {
     }
 
     try {
-        const route = matchRoute(method, proxy);
+        const route = matchRoute(method, pathForRouting);
 
         if (route) {
           // Add matched parameters to event for handler use
           event.routeParams = route.params;
-
+          //console.log(`[index.js] Route found: ${route.handler.name}.  Calling handler...`);
           // Call the matched handler
             return await route.handler(event)
         }

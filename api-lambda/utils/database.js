@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const mysql = require('mysql2/promise');
 
 // Database connection configuration
@@ -29,6 +31,13 @@ function getPool() {
         pool = mysql.createPool(dbConfig);
     }
     return pool;
+}
+
+async function closePool() {
+    if (pool) {
+        await pool.end();
+        pool = null;
+    }
 }
 
 /**
@@ -108,8 +117,7 @@ async function getAll(table, condition = '', params = [], limit = null, offset =
                 query += ` OFFSET ${offset}`;
             }
         }
-        //const rows = await executeQuery(query, params);
-        //return rows;
+
         return await executeQuery(query, params);
 
     } catch (error) {
@@ -176,6 +184,7 @@ async function updateById(table, id, data, idColumn = 'id') {
  * @param {number|string} id - Record ID
  * @returns {Promise<Object>} Delete result
  */
+/*
 async function deleteById(table, id) {
     const query = `DELETE FROM ${table} WHERE id = ?`;
 
@@ -191,7 +200,7 @@ async function deleteById(table, id) {
         throw new Error(`Database delete error: ${error.message}`);
     }
 }
-
+*/
 // Export all functions
 module.exports = {
     getPool,
@@ -201,5 +210,5 @@ module.exports = {
     getCount,
     insert,
     updateById,
-    deleteById
+    closePool
 };

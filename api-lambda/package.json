@@ -11,10 +11,15 @@
     "deploy": "npm run build && cd ../lambda-deployment && zip -r ../modular-lambda.zip . && cd .. && aws lambda update-function-code --function-name api-lambda --zip-file fileb://modular-lambda.zip --region sa-east-1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "start": "node backend-server.js",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "dependencies": {
-    "mysql2": "^3.6.0"
+    "cors": "^2.8.5",
+    "dotenv": "16.4.5",
+    "express": "^5.1.0",
+    "mysql2": "^3.6.0",
+    "stripe": "^18.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
