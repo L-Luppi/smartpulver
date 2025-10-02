@@ -11,6 +11,8 @@ import {
   ListItemButton,
   ListItemText,
   Stack,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -19,7 +21,24 @@ import { useAuth } from "react-oidc-context";
 
 export default function Hero() {
   const [openMenu, setOpenMenu] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const auth = useAuth();
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+const handleLogout = async () => {
+  await auth.removeUser(); // remove o usuário do storage do oidc
+  localStorage.clear();    // se você tiver guardado algo extra
+  sessionStorage.clear();
+  handleMenuClose();
+};
+
+  const isLoggedIn = !!auth.user;
 
   return (
     <Box
@@ -48,26 +67,63 @@ export default function Hero() {
             <Button sx={{ color: "#fff" }}>Home</Button>
             <Button sx={{ color: "#fff" }}>Planos</Button>
             <Button sx={{ color: "#fff" }}>Contato</Button>
-            <Button
-              sx={{ color: "#fff" }}
-              onClick={() => {
-                const signupUrl = import.meta.env.VITE_COGNITO_SIGNUP_URL;
-                window.location.href = signupUrl;
-              }}
-            >
-              Cadastro
-            </Button>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "#FF9800",
-                color: "#fff",
-                "&:hover": { backgroundColor: "#e68900" },
-              }}
-              onClick={() => auth.signinRedirect()}
-            >
-              Login
-            </Button>
+
+            {!isLoggedIn ? (
+              <>
+                <Button
+                  sx={{ color: "#fff" }}
+                  onClick={() => {
+                    const signupUrl = import.meta.env.VITE_COGNITO_SIGNUP_URL;
+                    window.location.href = signupUrl;
+                  }}
+                >
+                  Cadastro
+                </Button>
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#FF9800",
+                    color: "#fff",
+                    "&:hover": { backgroundColor: "#e68900" },
+                  }}
+                  onClick={() => auth.signinRedirect()}
+                >
+                  Login
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    color: "#fff",
+                    borderColor: "#fff",
+                    "&:hover": { backgroundColor: "#fff", color: "#000" },
+                  }}
+                  onClick={() => (window.location.href = "/app")}
+                >
+                  Ir para Plataforma
+                </Button>
+                <Button
+                  sx={{ color: "#fff", textTransform: "none" }}
+                  onClick={handleMenuOpen}
+                >
+                  {auth.user?.profile?.name || auth.user?.profile?.email}
+                </Button>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                >
+                  <MenuItem
+                    onClick={() => (window.location.href = "/assinatura")}
+                  >
+                    Assinatura
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </Menu>
+              </>
+            )}
           </Box>
 
           {/* Menu Mobile */}
@@ -94,28 +150,55 @@ export default function Hero() {
                 <ListItemText primary={text} />
               </ListItemButton>
             ))}
-            <ListItem>
-              <Button
-                sx={{ color: "#fff" }}
-                onClick={() => {
-                  const signupUrl = import.meta.env.VITE_COGNITO_SIGNUP_URL;
-                  window.location.href = signupUrl;
-                }}
+
+            {!isLoggedIn ? (
+              <ListItem>
+                <Button
+                  sx={{ color: "#000" }}
+                  onClick={() => {
+                    const signupUrl = import.meta.env.VITE_COGNITO_SIGNUP_URL;
+                    window.location.href = signupUrl;
+                  }}
+                >
+                  Cadastro
+                </Button>
+                <Button
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#FF9800",
+                    color: "#fff",
+                    "&:hover": { backgroundColor: "#e68900" },
+                  }}
+                  onClick={() => auth.signinRedirect()}
+                >
+                  Login
+                </Button>
+              </ListItem>
+            ) : (
+              <ListItem
+                sx={{ display: "flex", flexDirection: "column", gap: 1 }}
               >
-                Cadastro
-              </Button>
-              <Button
-                fullWidth
-                sx={{
-                  backgroundColor: "#FF9800",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#e68900" },
-                }}
-                onClick={() => auth.signinRedirect()}
-              >
-                Login
-              </Button>
-            </ListItem>
+                <Typography fontWeight="bold">
+                  {auth.user?.profile?.name || auth.user?.profile?.email}
+                </Typography>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => (window.location.href = "/app")}
+                >
+                  Ir para Plataforma
+                </Button>
+                <Button
+                  fullWidth
+                  onClick={() => (window.location.href = "/assinatura")}
+                >
+                  Assinatura
+                </Button>
+                <Button fullWidth color="error" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </ListItem>
+            )}
           </List>
         </Box>
       </Drawer>
@@ -157,7 +240,7 @@ export default function Hero() {
             </Typography>
             <Stack
               direction={{ xs: "column", sm: "row" }}
-              spacing={2} // espaço entre os botões
+              spacing={2}
               justifyContent={{ xs: "center", md: "flex-start" }}
               mb={4}
             >
@@ -195,7 +278,7 @@ export default function Hero() {
               width: { xs: "80%", md: "500px" },
               maxHeight: "800px",
               mt: { xs: 4, md: 0 },
-              ml: { xs: 0, md: 12 }, // Espaçamento lateral extra no desktop
+              ml: { xs: 0, md: 12 },
               objectFit: "contain",
               animation: "infinityMove 6s linear infinite",
               "@keyframes infinityMove": {
