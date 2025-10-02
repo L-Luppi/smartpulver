@@ -25,3 +25,7 @@ dist-ssr
 .amplify
 amplify_outputs*
 amplifyconfiguration*
+
+# local dev env
+.env
+**/.env

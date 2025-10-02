@@ -1,4 +1,4 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')('sk_test_51SAcRjEoCBqFXsH3jjKWf6WE2lsj71Vq03620LFH5J2B0cOiV43y499VHnd8y0SA0sIBBDUAx1wGf4MjRd7KKH0d00aSmnV8Py');
 const { success, serverError } = require('../../utils/response');
 
 // ESSE METODO VAI FICAR EM STANDBY ... usar createSubscription ao inves dele
