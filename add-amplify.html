@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Pulver - CDN React + Amplify</title>
+    
+    <!-- React and ReactDOM from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- AWS Amplify from CDN -->
+    <script src="https://unpkg.com/aws-amplify@6/dist/aws-amplify.min.js"></script>
+    
+    <style>
+      body { margin: 0; font-family: 'Roboto', sans-serif; background: #f5f5f5; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Test if Amplify loads from CDN
+      console.log('AWS Amplify from CDN:', typeof window.aws_amplify);
+      
+      // Simple React app with Amplify
+      const { useState } = React;
+      const { createRoot } = ReactDOM;
+      
+      function AmplifyTest() {
+        const [status, setStatus] = useState('Testing Amplify CDN...');
+        
+        React.useEffect(() => {
+          if (window.aws_amplify) {
+            setStatus('✅ Amplify loaded from CDN successfully!');
+          } else {
+            setStatus('❌ Amplify CDN loading failed');
+          }
+        }, []);
+        
+        return React.createElement('div', {
+          style: { padding: '20px', textAlign: 'center' }
+        },
+          React.createElement('h1', null, '🚀 Smart Pulver - CDN Amplify Test'),
+          React.createElement('p', null, status)
+        );
+      }
+      
+      const root = createRoot(document.getElementById('root'));
+      root.render(React.createElement(AmplifyTest));
+    </script>
+  </body>
+</html>
