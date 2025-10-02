@@ -1,4 +1,4 @@
-const { corsResponse } = require('./utils/response');
+const { corsResponse, serverError, notFound } = require('./utils/response');
 
 // Import all handler modules
 const manufacturersHandler = require('./handlers/manufacturers');
@@ -8,8 +8,38 @@ const produtosHandler = require('./handlers/agrofit/produtos');
 const culturasHandler = require('./handlers/agrofit/culturas');
 const pragasHandler = require('./handlers/agrofit/pragas');
 
-// Route configuration - maps routes to handler functions
+//handlers para funções restritas por cliente (tenantID)
+const assinantesHandler = require('./handlers/tenant/assinantes');
+
+//handlers para funções administrativas
+const assinaturasHandler = require('./handlers/smart/assinaturas');
+const planosHandler = require('./handlers/smart/planos');
+const IBGEHandler = require('./handlers/cidadesIBGE')
+
 const routes = {
+    // Gerais
+    'GET estados': IBGEHandler.getUF,
+    'GET cidades': IBGEHandler.getCidades,
+    'GET cidades/{sigla}': IBGEHandler.getCidadesByUF,
+    'GET cidade/{cod_ibge}': IBGEHandler.getCidade,
+
+    // Planos e Assinaturas
+    'GET smart/planos': planosHandler.getPlanos,
+    'GET smart/planos/{id}': planosHandler.getPlanoById,
+    'POST smart/planos': planosHandler.createPlano,
+    'PUT smart/planos/{id}': planosHandler.updatePlano,
+
+    'GET smart/assinaturas': assinaturasHandler.getAssinaturas,
+    'GET smart/assinaturas/{id}': assinaturasHandler.getAssinaturaById,
+    'POST smart/assinaturas': assinaturasHandler.createAssinatura,
+    'PUT smart/assinaturas/{id}': assinaturasHandler.updateAssinatura,
+
+    // Assinantes endpoints
+    'GET tenants/assinantes': assinantesHandler.getAssinantes,
+    'GET tenants/assinantes/{id}': assinantesHandler.getAssinanteById,
+    'POST tenants/assinantes': assinantesHandler.createAssinante,
+    'PUT tenants/assinantes/{id}': assinantesHandler.updateAssinante,
+
     // Manufacturers endpoints
     'GET /api/v1/manufacturers': manufacturersHandler.getManufacturers,
     'GET /api/v1/manufacturers/{id}': manufacturersHandler.getManufacturerById,
@@ -37,24 +67,40 @@ const routes = {
 
 /**
  * Match dynamic routes with path parameters
- * @param {string} requestPath - The actual request path
- * @param {string} routePattern - The route pattern with {param} placeholders
+ * @param {string} method - The actual request method
+ * @param {string} proxy - The route parth
  * @returns {Object} Match result with path parameters
  */
-function matchRoute(requestPath, routePattern) {
-    // Convert route pattern to regex (e.g., /api/v1/produtos/{id} -> /api/v1/produtos/([^/]+))
-    const regexPattern = routePattern.replace(/\{[^}]+\}/g, '([^/]+)');
-    const regex = new RegExp(`^${regexPattern}$`);
-    const match = requestPath.match(regex);
+function matchRoute(method, proxy) {
+    // remove 'api/v1' prefix from proxy for route matching
+    const cleanPath = proxy.replace(/^api\/v1\//, '');
 
-    if (match) {
-        // Extract path parameters
-        const paramNames = (routePattern.match(/\{([^}]+)\}/g) || []).map(p => p.slice(1, -1));
-        const pathParameters = {};
-        paramNames.forEach((name, index) => {
-            pathParameters[name] = match[index + 1];
-        });
-        return { match: true, pathParameters };
+    // Try exact match first
+    const exactKey = `${method} ${cleanPath}`;
+    if (routes[exactKey]) {
+        return { handler: routes[exactKey], params: {} };
+    }
+
+    // Try pattern matching for routes with {id}, {sigla}, etc
+    for (const [routeKey, handler] of Object.entries(routes)) {
+        const [routeMethod, routePath] = routeKey.split(' ', 2);
+        if (routeMethod !== method) continue;
+
+        //Convert route pattern to regex
+        const routeRegex = routePath.replace(/\{([^}]+)}/g, '([^/]+)');
+        const regex = new RegExp(`^${routeRegex}$`);
+
+        const match = cleanPath.match(regex);
+        if (match) {
+            // Extract parameter names and values
+            const paramNames = [...routePath.matchAll(/\{([^}]+)}/g)].map(m => m[1]);
+            const params = {};
+            paramNames.forEach((name, index) => {
+                params[name] = match[index + 1];
+            });
+
+            return { handler, params };
+        }
     }
 
     return { match: false };
@@ -63,99 +109,38 @@ function matchRoute(requestPath, routePattern) {
 /**
  * Main Lambda handler
  * @param {Object} event - Lambda event object
- * @param {Object} context - Lambda context object
  * @returns {Promise<Object>} HTTP response object
  */
-exports.handler = async (event, context) => {
-    console.log('=== Lambda Invocation ===');
-    console.log('Method:', event.httpMethod);
-    console.log('Path:', event.path);
-    console.log('Query Parameters:', event.queryStringParameters);
+exports.handler = async (event) => {
+    const proxy = event.pathParameters?.proxy || '';
+    const method = event.httpMethod;
+
+    console.log(`${method} /${proxy}`);
+    console.log('Full proxy:', JSON.stringify(proxy));
+
+    // Handle CORS preflight requests
+    if (method === 'OPTIONS') {
+        return corsResponse();
+    }
 
     try {
-        const method = event.httpMethod;
-        const path = event.path;
-        const routeKey = `${method} ${path}`;
+        const route = matchRoute(method, proxy);
 
-        // Handle CORS preflight requests
-        if (method === 'OPTIONS') {
-            console.log('Handling CORS preflight request');
-            return corsResponse();
+        if (route) {
+          // Add matched parameters to event for handler use
+          event.routeParams = route.params;
+
+          // Call the matched handler
+            return await route.handler(event)
         }
 
-        // Try exact route match first
-        let handler = routes[routeKey];
-        let pathParameters = {};
+        //console.log('No route found - available routes:');
+        //console.log(Object.keys(routes));
 
-        // If no exact match, try pattern matching for dynamic routes
-        if (!handler) {
-            console.log('No exact route match, trying pattern matching...');
-
-            for (const [pattern, patternHandler] of Object.entries(routes)) {
-                const [patternMethod, patternPath] = pattern.split(' ');
-
-                if (patternMethod === method) {
-                    const routeMatch = matchRoute(path, patternPath);
-                    if (routeMatch.match) {
-                        console.log('Pattern match found:', pattern);
-                        handler = patternHandler;
-                        pathParameters = routeMatch.pathParameters;
-                        break;
-                    }
-                }
-            }
-        } else {
-            console.log('Exact route match found:', routeKey);
-        }
-
-        // Execute handler if found
-        if (handler) {
-            // Add path parameters to event
-            event.pathParameters = { ...event.pathParameters, ...pathParameters };
-
-            console.log('Executing handler with path parameters:', pathParameters);
-            const result = await handler(event, context);
-
-            console.log('Handler executed successfully, status:', result.statusCode);
-            return result;
-        }
-
-        // Route not found
-        console.log('Route not found:', routeKey);
-        console.log('Available routes:', Object.keys(routes));
-
-        return {
-            statusCode: 404,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify({
-                success: false,
-                error: 'Route not found',
-                route: routeKey,
-                availableRoutes: Object.keys(routes),
-                timestamp: new Date().toISOString()
-            })
-        };
+        return notFound('Route')
 
     } catch (error) {
-        console.error('=== Lambda Error ===');
-        console.error('Error:', error);
-        console.error('Stack:', error.stack);
-
-        return {
-            statusCode: 500,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify({
-                success: false,
-                error: 'Internal server error',
-                message: error.message,
-                timestamp: new Date().toISOString()
-            })
-        };
+        console.error('Handler error:', error);
+        return serverError('Internal server error')
     }
 };

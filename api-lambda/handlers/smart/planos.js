@@ -4,7 +4,6 @@ const { success, notFound, serverError } = require('../../utils/response');
 // GET /api/v1/smart/plans
 async function getPlanos(event) {
     try {
-        console.log('GET Plans - Event:', JSON.stringify(event, null, 2));
 
         const queryParams = event.queryStringParameters || {};
         const {
@@ -20,7 +19,7 @@ async function getPlanos(event) {
         const params = [];
 
         if (status !== undefined) {
-            const validStatus = ['ativo', 'inativo', 'cancelado', 'promo'];
+            const validStatus = ['ativo', 'inativo', 'cancelado', 'promo', 'suspenso'];
             if (validStatus.includes(status.toLowerCase())) {
                 condition = 'status = ?';
                 params.push(status.toLowerCase());
@@ -39,8 +38,10 @@ async function getPlanos(event) {
             }
         }
 
-        const result = await getAll('plans', condition, params, parseInt(limit), parseInt(offset), orderClause);
-        const totalCount = await getCount('plans', condition, params);
+        const [result, totalCount] = await Promise.all([
+            getAll('plano', condition, params, parseInt(limit), parseInt(offset), orderClause),
+            getCount('plano', condition, params)
+        ]);
 
         return success({
             data: result,
@@ -64,15 +65,14 @@ async function getPlanos(event) {
 
 // GET /api/v1/smart/plans/{id}
 async function getPlanoById(event) {
-    try {
-        console.log('GET Plan By ID - Event:', JSON.stringify(event, null, 2));
 
-        const id = event.pathParameters?.id;
+    try {
+        const id = event.routeParams?.id;
         if (!id) {
             return serverError('ID parameter is required', 400);
         }
 
-        const result = await getById('plans', id);
+        const result = await getById('plano', id, '', 'id');
 
         if (!result) {
             return notFound('Plano not found');
@@ -89,12 +89,11 @@ async function getPlanoById(event) {
 // POST /api/v1/smart/plans
 async function createPlano(event) {
     try {
-        console.log('CREATE Plan - Event:', JSON.stringify(event, null, 2));
 
         const body = JSON.parse(event.body || '{}');
 
         // Validate required fields
-        const requiredFields = ['nome', 'display_name', 'valor_atual'];
+        const requiredFields = ['nome', 'display_name', 'duracao_dias', 'valor_atual'];
         const missingFields = requiredFields.filter(field => !body[field]);
 
         if (missingFields.length > 0) {
@@ -102,9 +101,9 @@ async function createPlano(event) {
         }
 
         // Prepare data (only allow specific fields)
-        const allowedFields = ['nome', 'display_name', 'descricao', 'valor_atual', 'createdAt', 'updatedAt', 'status'];
-        const data = {};
+        const allowedFields = ['nome', 'display_name', 'descricao', 'duracao_dias', 'valor_atual', 'createdAt', 'updatedAt', 'status'];
 
+        const data = {};
         allowedFields.forEach(field => {
             if (body[field] !== undefined) {
                 data[field] = body[field];
@@ -113,9 +112,10 @@ async function createPlano(event) {
 
         // Set defaults
         if (data.createdAt === undefined) data.createdAt = Date.now();
+        if (data.updatedAt === undefined) data.updatedAt = Date.now();
         if (data.status === undefined) data.status = 'ativo';
 
-        const result = await insert('plans', data);
+        const result = await insert('plano', data);
 
         return success({
             data: result,
@@ -128,12 +128,10 @@ async function createPlano(event) {
     }
 }
 
-// PUT /api/v1/smart/plans/{id}
 async function updatePlano(event) {
     try {
-        console.log('UPDATE Plan - Event:', JSON.stringify(event, null, 2));
-
-        const id = event.pathParameters?.id;
+        //const id = event.pathParameters?.pathParameters?.id;  // Make sure this matches your route
+        const id = event.routeParams?.id;
         if (!id) {
             return serverError('ID parameter is required', 400);
         }
@@ -141,7 +139,7 @@ async function updatePlano(event) {
         const body = JSON.parse(event.body || '{}');
 
         // Prepare data (only allow specific fields)
-        const allowedFields = ['nome', 'display_name', 'descricao', 'valor_atual', 'updatedAt', 'status'];
+        const allowedFields = ['nome', 'display_name', 'descricao', 'duracao_dias', 'valor_atual', 'updatedAt', 'status'];
         const data = {};
 
         allowedFields.forEach(field => {
@@ -150,14 +148,30 @@ async function updatePlano(event) {
             }
         });
 
+        // Special validation for status field
+        if (data.status !== undefined) {
+            const validStatus = ['ativo', 'inativo', 'cancelado', 'promo', 'suspenso'];
+            const statusLower = data.status.toLowerCase();
+
+            if (!validStatus.includes(statusLower)) {
+                return serverError('Invalid status. Valid options: ' + validStatus.join(', '), 400);
+            }
+
+            // Normalize status to lowercase
+            data.status = statusLower;
+        }
+
         if (Object.keys(data).length === 0) {
             return serverError('No valid fields to update', 400);
         }
 
-        const result = await updateById('plans', id, data);
+        // Corrige data de atualização se não veio
+        if (data.updatedAt === undefined) data.updatedAt = Date.now();
+
+        const result = await updateById('plano', id, data, 'id');
 
         if (!result) {
-            return notFound('Plan not found');
+            return notFound('Plano not found');
         }
 
         return success({

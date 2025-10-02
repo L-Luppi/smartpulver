@@ -19,7 +19,7 @@ import { useAuth } from "react-oidc-context";
 
 export default function Hero() {
   const [openMenu, setOpenMenu] = useState(false);
- const auth = useAuth();
+  const auth = useAuth();
 
   return (
     <Box
@@ -49,13 +49,22 @@ export default function Hero() {
             <Button sx={{ color: "#fff" }}>Planos</Button>
             <Button sx={{ color: "#fff" }}>Contato</Button>
             <Button
+              sx={{ color: "#fff" }}
+              onClick={() => {
+                const signupUrl = import.meta.env.VITE_COGNITO_SIGNUP_URL;
+                window.location.href = signupUrl;
+              }}
+            >
+              Cadastro
+            </Button>
+            <Button
               variant="contained"
               sx={{
                 backgroundColor: "#FF9800",
                 color: "#fff",
                 "&:hover": { backgroundColor: "#e68900" },
               }}
-              onClick={() => auth.signinRedirect()} 
+              onClick={() => auth.signinRedirect()}
             >
               Login
             </Button>
@@ -87,13 +96,22 @@ export default function Hero() {
             ))}
             <ListItem>
               <Button
+                sx={{ color: "#fff" }}
+                onClick={() => {
+                  const signupUrl = import.meta.env.VITE_COGNITO_SIGNUP_URL;
+                  window.location.href = signupUrl;
+                }}
+              >
+                Cadastro
+              </Button>
+              <Button
                 fullWidth
                 sx={{
                   backgroundColor: "#FF9800",
                   color: "#fff",
                   "&:hover": { backgroundColor: "#e68900" },
                 }}
-                onClick={() => auth.signinRedirect()} 
+                onClick={() => auth.signinRedirect()}
               >
                 Login
               </Button>

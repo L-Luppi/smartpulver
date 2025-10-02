@@ -1,7 +1,7 @@
 import { useAuth } from "react-oidc-context";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 
 export default function LoginCallback() {
   const auth = useAuth();
@@ -14,25 +14,19 @@ export default function LoginCallback() {
       const idToken = auth.user?.id_token;
 
       try {
-        // 🔹 Verifica se o usuário já tem assinatura
         const res = await fetch("/stripe/webhook", {
           headers: { Authorization: `Bearer ${idToken}` },
         });
-        console.log(res)
+
         const data = await res.json();
-        console.log(data)
+
         if (data.hasActiveSubscription) {
-          // Já tem assinatura → vai pro app
           navigate("/dashboard");
         } else {
-          // Não tem assinatura → manda direto pro Payment Link do Stripe
-          console.log('aqui');
           window.location.href =
             "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
         }
       } catch (err) {
-        // fallback → também manda pro Payment Link
-        console.log('aqui2')
         window.location.href =
           "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
       }
@@ -42,7 +36,23 @@ export default function LoginCallback() {
   }, [auth, navigate]);
 
   if (auth.isLoading) {
-    return <div>Processando login...</div>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          gap: 2,
+        }}
+      >
+        <CircularProgress />
+        <Typography variant="body1" color="text.secondary">
+          Autenticando, aguarde...
+        </Typography>
+      </Box>
+    );
   }
 
   if (auth.error) {
@@ -60,15 +70,15 @@ export default function LoginCallback() {
   }
 
   return (
-     <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </Box>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <CircularProgress />
+    </Box>
   );
 }

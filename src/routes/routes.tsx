@@ -26,7 +26,7 @@ export const router = (
     },
     // 🔹 Rotas protegidas (usuário precisa estar logado)
     {
-      path: "/",
+      path: "/app",
       element: (
         <ProtectedRoute>
           <DefaultLayout
@@ -46,7 +46,7 @@ export const router = (
 
     // 🔹 Rota pública (ex.: landing page do site)
     {
-      path: "/home",
+      path: "/",
       element: <Site />,
     },
   ]);

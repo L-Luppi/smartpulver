@@ -162,14 +162,14 @@ async function createAssinatura(event) {
 
         // Set valor_pago from plan if not provided
         if (!data.valor_pago) {
-            data.valor_pago = plano.valor_promocional || plan.valor_atual;
+            data.valor_pago = valorPlano;
         }
 
         const result = await insert('assinaturas', data);
 
         return success({
             data: result,
-            message: 'Subscription created successfully'
+            message: 'Nova Assinatura Adicionada!'
         }, 201);
 
     } catch (error) {
@@ -179,7 +179,7 @@ async function createAssinatura(event) {
 }
 
 // PUT /api/v1/smart/subscriptions/{id}
-async function updateSubscription(event) {
+async function updateAssinatura(event) {
     try {
         console.log('UPDATE Subscription - Event:', JSON.stringify(event, null, 2));
 
@@ -191,7 +191,7 @@ async function updateSubscription(event) {
         const body = JSON.parse(event.body || '{}');
 
         // Prepare data
-        const allowedFields = ['status', 'data_fim', 'valor_pago', 'observacoes'];
+        const allowedFields = ['id_plano', 'id_assinante', 'dt_assinatura', 'dt_vigencia', 'renova_automatico', 'valor_pago','status'];
         const data = {};
 
         allowedFields.forEach(field => {
@@ -204,15 +204,15 @@ async function updateSubscription(event) {
             return serverError('No valid fields to update', 400);
         }
 
-        const result = await updateById('assinaturas', id, data);
+        const result = await updateById('assinatura', id, data);
 
         if (!result) {
-            return notFound('Subscription not found');
+            return notFound('Assinatura not found');
         }
 
         return success({
             data: result,
-            message: 'Subscription updated successfully'
+            message: 'Assinatura updated successfully'
         });
 
     } catch (error) {
@@ -224,5 +224,6 @@ async function updateSubscription(event) {
 module.exports = {
     getAssinaturas,
     getAssinaturaById,
-    createAssinatura
+    createAssinatura,
+    updateAssinatura
 };

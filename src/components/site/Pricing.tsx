@@ -57,21 +57,6 @@ const plans = [
     button: "Aproveitar Desconto",
     highlight: true,
   },
-  {
-    name: "Plano Personalizado",
-    subtitle: "Solução sob medida",
-    price: "Sob consulta",
-    per: "",
-    priceId: "",
-    description: "Escolha os recursos que precisa",
-    features: [
-      "Pacotes adaptados ao seu negócio",
-      "Escalabilidade sob demanda",
-      "Suporte dedicado",
-    ],
-    color: "info",
-    button: "Fale Conosco",
-  },
 ];
 
 const guarantees = [
@@ -186,9 +171,15 @@ export default function Pricing() {
                   </Box>
                 </CardContent>
                 <Box sx={{ p: 2 }}>
-                  <Button variant="contained" color={plan.color as any} fullWidth onClick={() => handleSubscribe(plans[activeStep].priceId)} >
-                    {plan.button}
-                  </Button>
+                  <Button
+  variant="contained"
+  color={plan.color as any}
+  fullWidth
+  onClick={() => handleSubscribe(plan.priceId)}
+>
+  {plan.button}
+</Button>
+
                 </Box>
               </Card>
             </Grid>

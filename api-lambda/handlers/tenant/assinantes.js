@@ -1,28 +1,91 @@
-const { getAll, getById, insert, updateById} = require('../../utils/database');
+const { getAll, getById, insert, updateById, getCount} = require('../../utils/database');
 const { success, notFound, serverError, corsResponse} = require('../../utils/response');
+const { getLocationData } = require('../../utils/locationService');
 
-async function getAssinantes() {
+async function getAssinantes(event) {
     try {
-        const assinantes = await getAll('assinante', '', [], 'nome');
-        return success(assinantes);
+        const queryParams = event.queryStringParameters || {};
+        const {
+            limit = 50,
+            offset = 0,
+            status,
+            orderBy = 'nome',
+            sortBy = 'nome',
+            sortOrder = 'ASC'
+        } = queryParams;
+
+        let condition = '';
+        const params = [];
+
+        if (status !== undefined) {
+            const validStatus = ['ativo', 'inativo', 'cancelado'];
+            if (validStatus.includes(status.toLowerCase())) {
+                condition = 'status = ?';
+                params.push(status.toLowerCase());
+            } else {
+                return serverError('Invalid Status', 400);
+            }
+        }
+
+        let orderClause = orderBy;
+        if (sortBy) {
+            const allowedSortFields = ['id', 'nome', 'user_name'];
+            const allowedSortOrder = ['ASC', 'DESC'];
+
+            if (allowedSortFields.includes(sortBy) && allowedSortOrder.includes(sortOrder.toUpperCase())) {
+                orderClause = `${sortBy} ${sortOrder.toUpperCase()}`;
+            }
+        }
+
+        const [result, totalCount] = await Promise.all([
+            getAll('assinante', condition, params, parseInt(limit), parseInt(offset), orderClause),
+            getCount('assinante', condition, params)
+        ]);
+
+        const enrichedResult = await getLocationData(result, 'id_cidadeIBGE');
+
+        return success({
+            data: enrichedResult,
+            pagination: {
+                total: totalCount,
+                count: result.length,
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                hasMore: (parseInt(offset) + result.length) < totalCount,
+            },
+            sorting: {
+                orderBy: orderClause
+            }
+        });
+
     } catch (error) {
-        return serverError(error);
+        console.error('GET Assinantes Error:', error);
+        return serverError('Failed to fetch assinantes');
     }
 }
 
 async function getAssinanteById(event) {
     try {
-        const id = event.pathParameters.id;
+        const id = event.routeParams?.id;
+        if (!id) {
+            return serverError('ID parameter is required', 400);
+        }
 
-        const assinante = await getById('assinante', id, '', 'id');
-        if (!assinante) {
+        const result = await getById('assinante', id, '', 'id');
+        if (!result) {
             return notFound('Assinante');
         }
-        return success(assinante);
+        console.log('DEBUG - retorno do getById', result)
+        const enrichedResult = await getLocationData(result, 'id_cidadeIBGE');
+
+        return success(enrichedResult);
+
     } catch (error) {
-        return serverError(error);
+        console.error('GET Assinante By ID Error:', error);
+        return serverError('Failed to fetch assinante');
     }
 }
+
 
 async function createAssinante(event) {
     const body = JSON.parse(event.body);
