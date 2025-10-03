@@ -1,6 +1,6 @@
 const { getAll, getById, insert, updateById, getCount, executeQuery} = require('../../utils/database');
 const { success, notFound, serverError } = require('../../utils/response');
-const { createProduct, getStripeProduct, updateProduct, updatePrice, createPrice} = require('../stripe/stripe');
+const { createProduct, getStripeProduct, updateProduct, updatePrice, createPrice, singleShotCreate} = require('../stripe/stripe');
 
 const {
     validateRequiredFields,
@@ -144,24 +144,38 @@ async function createPlano(event) {
                         description: result.descricao,
                         metadata: {
                             internal_id: result.id,
-                            display_name: result.display_name
+                            display_name: result.display_name,
                         },
                         default_price_data: {
                             unit_amount: Math.round(result.valor_atual * 100),
                             currency: result.paymentCurrency,   // 'brl',
                             recurring: {
                                 interval: result.paymentInterval,
-                                interval_count: result.paymentInterval_count
-                            }
-                        }
+                                interval_count: result.paymentInterval_count,
+                            },
+                        },
                     };
-                    //console.log("### CALLING STRIPE WITH\n", stripeProduct);
-                    const paymentResource = await createProduct(stripeProduct);
-                    //console.log("### STRIPE RETURN \n", paymentResource);
+                    console.log("### CALLING STRIPE WITH\n", stripeProduct);
+
+                    //singleShot returns one stripe object only
+                    const paymentResource = await singleShotCreate(stripeProduct);
+
+                    //standard creation separates product and price and returns 2 objects stripeProd and stripePrice
+                    //const paymentResource = await createProduct(stripeProduct);
+
+                    console.log("### STRIPE RETURN \n", paymentResource);
                     // call updatePlano
+                    //const paymentData = {
+                    //    payment_id: paymentResource.stripeProd.id,
+                    //    price_id: paymentResource.stripePrice.id
+                    // }
+
+                    // precisa fazer o parse para pegar os campos que retornaram
+                    //const body = JSON.parse(event.body || '{}');
+
                     const paymentData = {
-                        payment_id: paymentResource.stripeProd.id,
-                        price_id: paymentResource.stripePrice.id
+                        payment_id: paymentResource.body.data.id,
+                        price_id: paymentResource.body.data.default_price,
                     }
                     // update plano with selling partner id and price id
                     const enrichedResult = await updateById('plano', result.id, paymentData, 'id');
@@ -192,7 +206,6 @@ async function createPlano(event) {
 
 async function updatePlano(event) {
     try {
-        //const id = event.pathParameters?.pathParameters?.id;  // Make sure this matches your route
         const id = event.routeParams?.id;
         if (!id) {
             return serverError('ID parameter is required', 400);
@@ -206,6 +219,8 @@ async function updatePlano(event) {
 
         // If plano exists validate and handle updates
         const body = JSON.parse(event.body || '{}');
+
+        console.log("[UPDATE PLANO]\n", body);
 
         // Filter incoming data to only allow updatable fields
         const cleanData = filterAllowedFields(body, ALLOWED_UPDATE_FIELDS);
@@ -241,7 +256,7 @@ async function updatePlano(event) {
         }
 
         const updatedPlano = await updateById('plano', id, cleanData, 'id');
-
+        console.log("UPDATED PLANO\n", updatedPlano);
         // stripe sync data
         if (updatedPlano) {
             // check if plano was already synced with stripe payment_id exists
@@ -254,6 +269,7 @@ async function updatePlano(event) {
                 const stripePayload = {}
                 let priceChanged = false;
 
+                console.log("STRIPE DATA \n", currentStripeData, "STRIPE PRICES\n", currentStripeData.prices?.data);
                 //compare changes to product data to update
                 if (currentStripeData.name !== updatedPlano.nome) {
                     stripePayload.name = updatedPlano.nome;
@@ -261,8 +277,8 @@ async function updatePlano(event) {
                 if (currentStripeData.description !== updatedPlano.descricao) {
                     stripePayload.description = updatedPlano.descricao;
                 }
-                if (currentStripeData.metadata.display_name !== updatedPlano.metadata.display_name) {
-                    stripePayload.metadata.display_name = updatedPlano.metadata.display_name;
+                if (updatedPlano.display_name && currentStripeData.metadata?.display_name !== updatedPlano.display_name) {
+                    stripePayload.metadata = { ...currentStripeData.metadata, display_name: updatedPlano.display_name };
                 }
                 // update status if needed
                 const isActive = ['ativo', 'promo'].includes(updatedPlano.status.toLowerCase());
@@ -287,7 +303,8 @@ async function updatePlano(event) {
                     priceChanged = true;
                 }
 
-                if (priceChanged) {
+                // ONLY CREATES A NEW PRICE IF PRICE CHANGED AND PRODUCT IS ACTIVE
+                if (priceChanged && isActive) {
                     const newPricePayload = {
                         unit_amount: updatedPlano.valor_atual ? updatedPlano.valor_atual : currentPlano.valor_atual,
                         currency: updatedPlano.currency ? updatedPlano.currency : currentPlano.currency,
@@ -319,18 +336,30 @@ async function updatePlano(event) {
                     },
                     default_price_data: {
                         unit_amount: Math.round(updatedPlano.valor_atual * 100),
-                        currency: updatedPlano.paymentCurrency,   // 'brl',
+                        currency: updatedPlano.paymentCurrency ? updatedPlano.paymentCurrency : 'brl',   // 'brl' se não informado,
                         recurring: {
-                            interval: updatedPlano.paymentInterval,
-                            interval_count: updatedPlano.paymentInterval_count
+                            interval: updatedPlano.paymentInterval ? updatedPlano.paymentInterval : 'week',
+                            interval_count: updatedPlano.paymentInterval_count ? updatedPlano.paymentInterval_count : 1
                         }
                     }
                 };
                 const paymentResource = await createProduct(stripeProduct);
+
                 const paymentData = {
                     payment_id: paymentResource.stripeProd.id,
                     price_id: paymentResource.stripePrice.id
                 }
+                // IF PLAN PRINCING NOT UPDATED REINFORCE AND SYNC
+                if (updatedPlano.paymentInterval !== paymentResource.stripePrice.recurring.interval) {
+                    paymentData.paymentInterval = paymentResource.stripePrice.recurring.interval;
+                }
+                if (updatedPlano.paymentInterval_count !== paymentResource.stripePrice.recurring.interval_count){
+                    paymentData.paymentInterval_count = paymentResource.stripePrice.recurring.interval_count;
+                }
+                if (updatedPlano.paymentCurrency !== paymentResource.stripePrice.currency) {
+                    paymentData.paymentCurrency = paymentResource.stripePrice.currency;
+                }
+
                 const enrichedResult = await updateById('plano', updatedPlano.id, paymentData, 'id');
                 return success({
                     data: enrichedResult,

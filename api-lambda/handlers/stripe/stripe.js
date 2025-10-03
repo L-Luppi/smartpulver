@@ -2,6 +2,30 @@ require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { success, serverError } = require('../../utils/response');
 
+async function singleShotCreate(produto) {
+    try {
+        const stripeProd = await stripe.products.create({
+            name: produto.name,
+            description: produto.description,
+            default_price_data: {
+                currency: produto.default_price_data.currency ? produto.default_price_data.currency : 'brl',
+                unit_amount: produto.default_price_data.unit_amount,
+                recurring: {
+                    interval: produto.default_price_data.recurring?.interval ?
+                        produto.default_price_data.recurring?.interval : 'month',
+                    interval_count: produto.default_price_data.recurring?.interval_count ?
+                        produto.default_price_data.recurring?.interval_count : 1,
+                },
+            },
+            metadata: produto.metadata,
+        });
+        return success(stripeProd, 200);
+    }catch(error){
+        console.error('CREATE Product Error:', error);
+        return serverError('SINGLESHOT CREATE - Failed to create product');
+    }
+}
+
 // ESSE METODO VAI FICAR EM STANDBY ... usar createSubscription ao inves dele
 async function createProduct(produto) {
     console.log('STRIPE produto \n', produto)
@@ -63,7 +87,7 @@ async function listStripeProducts(event) {
 }
 
 async function getStripeProduct(id) {
-    return await stripe.products.retrieve(id)
+    return await stripe.products.retrieve(id, { expand: ['default_price'], })
 }
 
 async function checkout(event) {
@@ -125,9 +149,9 @@ async function webhook(event) {
     return success();
 }
 
-
 module.exports = {
     createProduct,
+    singleShotCreate,
     updateProduct,
     createPrice,
     updatePrice,
