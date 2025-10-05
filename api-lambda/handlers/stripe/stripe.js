@@ -18,6 +18,7 @@ async function singleShotCreate(produto) {
                 },
             },
             metadata: produto.metadata,
+            expand: ['default_price'],
         });
         return success(stripeProd, 200);
     }catch(error){
@@ -26,7 +27,8 @@ async function singleShotCreate(produto) {
     }
 }
 
-// ESSE METODO VAI FICAR EM STANDBY ... usar createSubscription ao inves dele
+// ESSE METODO VAI FICAR EM STANDBY ... usar o metodo acima
+// singleShotCreate CRIA PRODUTO E PREÇO NO NOVO PADRÃO DA API
 async function createProduct(produto) {
     console.log('STRIPE produto \n', produto)
     try {
@@ -87,7 +89,16 @@ async function listStripeProducts(event) {
 }
 
 async function getStripeProduct(id) {
-    return await stripe.products.retrieve(id, { expand: ['default_price'], })
+    try {
+        return await stripe.products.retrieve(id, { expand: ['default_price'], });
+    } catch (error) {
+        if (error.type === 'StripeInvalidRequestError' && error.statusCode === 404) {
+            console.error('[STRIPE] Product not found: ', id);
+            return null;
+        }
+        console.error('[STRIPE] unexpected Error : ', error)
+        throw error;
+    }
 }
 
 async function checkout(event) {
@@ -141,10 +152,17 @@ async function webhook(event) {
             console.log('Stripe invoice payment failed');
             break;
         case 'product.created':
-            console.log('Stripe product created\n', body.data.object)
+            console.log('Stripe product created *** IF CREATION DIRECTLY IN STRIPE IMPLEMENT HANDLE ***\n', body.data.object);
+            // in case a product is created direclty in stripe object should
+            // be used to create local instance of product in app DB
+            break;
+        case 'product.updated':
+            console.log('Stripe product updated *** TO BE IMPLEMENTED *** \n', body.data.object);
+            // in case product is updated in stripe returned object should
+            // be used to update app DB data
             break;
         default:
-            console.log(`Unhandled event type ${body.type}`);
+            console.log(new Date().toLocaleString(), `Unhandled event type ${body.type}`);
     }
     return success();
 }
