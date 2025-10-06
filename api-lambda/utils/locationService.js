@@ -1,6 +1,6 @@
-const {executeQuery} = require("./database");
+import {executeQuery} from "./database.js";
 
-async function getLocationByCodigoIBGE(codigo_cidade_ibge) {
+export async function getLocationByCodigoIBGE(codigo_cidade_ibge) {
     if (!codigo_cidade_ibge) return null;
 
     const query = `
@@ -32,7 +32,7 @@ async function getLocationByCodigoIBGE(codigo_cidade_ibge) {
  * @param {string} cityCode - Field name containing city code (default: 'city_code')
  * @returns {Array} Records enriched with location data
  */
-async function getLocationData(registros, cityCode = 'id_cidade_ibge') {
+export async function getLocationData(registros, cityCode = 'id_cidade_ibge') {
     if (!registros) return registros;
 
     const isArray = Array.isArray(registros);
@@ -93,7 +93,7 @@ async function getLocationData(registros, cityCode = 'id_cidade_ibge') {
     }
 }
 
-function extractCityCode(locationData) {
+export function extractCityCode(locationData) {
     if (!locationData) return null;
 
     // Direct number/string
@@ -113,10 +113,3 @@ function extractCityCode(locationData) {
     }
     return null;
 }
-
-module.exports = {
-    getLocationByCodigoIBGE,
-    extractCityCode,
-    getLocationData
-};
-

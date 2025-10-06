@@ -1,6 +1,4 @@
-require('dotenv').config();
-
-const mysql = require('mysql2/promise');
+import mysql from 'mysql2/promise';
 
 // Database connection configuration
 const dbConfig = {
@@ -25,7 +23,7 @@ let pool = null;
 /**
  * Get database connection pool
  */
-function getPool() {
+export function getPool() {
     if (!pool) {
         // console.log('Creating new database connection pool');
         pool = mysql.createPool(dbConfig);
@@ -33,7 +31,7 @@ function getPool() {
     return pool;
 }
 
-async function closePool() {
+export async function closePool() {
     if (pool) {
         await pool.end();
         pool = null;
@@ -46,7 +44,7 @@ async function closePool() {
  * @param {Array} params - Query parameters
  * @returns {Promise<Array>} Query results
  */
-async function executeQuery(query, params = []) {
+export async function executeQuery(query, params = []) {
     try {
         const connection = getPool();
         const [rows] = await connection.execute(query, params);
@@ -65,14 +63,14 @@ async function executeQuery(query, params = []) {
  * @param {string} [idColumn='id'] - The name of the ID column
  * @returns {Promise<Object|null>} Single record or null
  */
-async function getById(table, id, condition = '', idColumn = 'id') {
+export async function getById(table, id, condition = '', idColumn = 'id') {
     const whereClause = condition ? `${idColumn} = ? AND ${condition}` : `${idColumn} = ?`;
     const query = `SELECT * FROM ${table} WHERE ${whereClause}`;
     const rows = await executeQuery(query, [id]);
     return rows.length > 0 ? rows[0] : null;
 }
 
-async function getCount(table, condition = '', params = []) {
+export async function getCount(table, condition = '', params = []) {
     try {
         let query = `SELECT COUNT(*) as total FROM ${table}`;
 
@@ -99,7 +97,7 @@ async function getCount(table, condition = '', params = []) {
  * @param {string} orderBy - ORDER BY clause
  * @returns {Promise<Array>} Array of records
  */
-async function getAll(table, condition = '', params = [], limit = null, offset = 0, orderBy = 'id ASC') {
+export async function getAll(table, condition = '', params = [], limit = null, offset = 0, orderBy = 'id ASC') {
     try {
         let query = `SELECT * FROM ${table}`;
 
@@ -132,7 +130,7 @@ async function getAll(table, condition = '', params = [], limit = null, offset =
  * @param {Object} data - Data to insert
  * @returns {Promise<Object>} Insert result
  */
-async function insert(table, data) {
+export async function insert(table, data) {
     try {
         const fields = Object.keys(data);
         const values = Object.values(data);
@@ -161,7 +159,7 @@ async function insert(table, data) {
  * @returns {Promise<Object>} Update result
  */
 
-async function updateById(table, id, data, idColumn = 'id') {
+export async function updateById(table, id, data, idColumn = 'id') {
     try {
         const fields = Object.keys(data);
         const values = Object.values(data);
@@ -201,14 +199,3 @@ async function deleteById(table, id) {
     }
 }
 */
-// Export all functions
-module.exports = {
-    getPool,
-    executeQuery,
-    getById,
-    getAll,
-    getCount,
-    insert,
-    updateById,
-    closePool
-};

@@ -1,21 +1,21 @@
-const { corsResponse, serverError, notFound } = require('./utils/response');
+import { corsResponse, serverError, notFound } from './utils/response.js';
 
 // Import all handler modules
-const manufacturersHandler = require('./handlers/manufacturers');
-const dronesHandler = require('./handlers/drones');
-const miscHandler = require('./handlers/misc');
-const produtosHandler = require('./handlers/agrofit/produtos');
-const culturasHandler = require('./handlers/agrofit/culturas');
-const pragasHandler = require('./handlers/agrofit/pragas');
-const stripeHandlers = require('./handlers/stripe/stripe');
+import * as manufacturersHandler from './handlers/manufacturers.js';
+import * as dronesHandler from './handlers/drones.js';
+import * as miscHandler from './handlers/misc.js';
+import * as produtosHandler from './handlers/agrofit/produtos.js';
+import * as culturasHandler from './handlers/agrofit/culturas.js';
+import * as pragasHandler from './handlers/agrofit/pragas.js';
+import * as stripeHandlers from './handlers/stripe/stripe.js';
 
 //handlers para funções restritas por cliente (tenantID)
-const assinantesHandler = require('./handlers/tenant/assinantes');
+import * as assinantesHandler from './handlers/tenant/assinantes.js';
 
 //handlers para funções administrativas
-const assinaturasHandler = require('./handlers/smart/assinaturas');
-const planosHandler = require('./handlers/smart/planos');
-const IBGEHandler = require('./handlers/cidadesIBGE');
+import * as assinaturasHandler from './handlers/smart/assinaturas.js';
+import * as planosHandler from './handlers/smart/planos.js';
+import * as IBGEHandler from './handlers/cidadesIBGE.js';
 
 // in case new versions are implemented just adjust this for proxy routes
 const API_PREFIX = 'api/v1/';
@@ -135,7 +135,7 @@ function matchRoute(method, proxy) {
  * @param {Object} event - Lambda event object
  * @returns {Promise<Object>} HTTP response object
  */
-exports.handler = async (event) => {
+export const handler = async (event) => {
     const pathForRouting = event.path || (event.pathParameters?.proxy || '');
     const method = event.httpMethod;
 

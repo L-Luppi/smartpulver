@@ -1,8 +1,8 @@
-require('dotenv').config();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { success, serverError } = require('../../utils/response');
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import { success, serverError } from '../../utils/response.js';
 
-async function singleShotCreate(produto) {
+export async function singleShotCreate(produto) {
     try {
         const stripeProd = await stripe.products.create({
             name: produto.name,
@@ -29,7 +29,7 @@ async function singleShotCreate(produto) {
 
 // ESSE METODO VAI FICAR EM STANDBY ... usar o metodo acima
 // singleShotCreate CRIA PRODUTO E PREÇO NO NOVO PADRÃO DA API
-async function createProduct(produto) {
+export async function createProduct(produto) {
     console.log('STRIPE produto \n', produto)
     try {
         // EXTRAI APENAS DADOS DO PRODUTO
@@ -55,13 +55,13 @@ async function createProduct(produto) {
     }
 }
 
-async function updateProduct(prodId, payload) {
+export async function updateProduct(prodId, payload) {
     return await stripe.products.update(prodId, payload);
 }
 
 // PRICES
 
-async function createPrice(priceData) {
+export async function createPrice(priceData) {
 
     return await stripe.prices.create({
         unit_amount: priceData.unit_amount,   // em centavos 10000 = 100.00
@@ -74,11 +74,11 @@ async function createPrice(priceData) {
     });
 }
 
-async function updatePrice(priceId, payload){
+export async function updatePrice(priceId, payload){
     return await stripe.prices.update(priceId, payload);
 }
 
-async function listStripeProducts(event) {
+export async function listStripeProducts(event) {
     const body = JSON.parse(event.body);
     console.log(body)
 
@@ -88,7 +88,7 @@ async function listStripeProducts(event) {
     });
 }
 
-async function getStripeProduct(id) {
+export async function getStripeProduct(id) {
     try {
         return await stripe.products.retrieve(id, { expand: ['default_price'], });
     } catch (error) {
@@ -101,7 +101,7 @@ async function getStripeProduct(id) {
     }
 }
 
-async function checkout(event) {
+export async function checkout(event) {
     const body = JSON.parse(event.body);
     const plano_id = body.smartPlano_id;          // nosso ID
     const product_id = body.plano_stripeID;       // ID do produto no Stripe
@@ -128,7 +128,7 @@ async function checkout(event) {
     //}
 }
 
-async function webhook(event) {
+export async function webhook(event) {
 
     const body = JSON.parse(event.body);
 
@@ -165,16 +165,4 @@ async function webhook(event) {
             console.log(new Date().toLocaleString(), `Unhandled event type ${body.type}`);
     }
     return success();
-}
-
-module.exports = {
-    createProduct,
-    singleShotCreate,
-    updateProduct,
-    createPrice,
-    updatePrice,
-    listStripeProducts,
-    getStripeProduct,
-    checkout,
-    webhook
 }

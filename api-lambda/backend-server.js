@@ -1,11 +1,12 @@
-// Creates a universal local Express.js server that uses
-// main Lambda router in `api-lambda/index.js`.
-// It allows to test entire API locally with tools like Postman.
+import {config} from 'dotenv';
+import path from 'path';
+const __dirname = import.meta.dirname;
+config({path: path.resolve(__dirname, '.env')});
 
-const express = require('express');
-const cors = require('cors');
-const { handler } = require('./index'); // Import the main handler
-const { closePool } = require('./utils/database');
+import express from "express";
+import cors from "cors";
+import {handler} from "./index"; // Import the main handler
+import {closePool} from "./utils/database";
 
 const app = express();
 const PORT = process.env.PORT || 3000;

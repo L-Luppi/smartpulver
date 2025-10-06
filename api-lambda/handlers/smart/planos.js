@@ -1,13 +1,13 @@
-const {getAll, getById, insert, updateById, getCount, executeQuery} = require('../../utils/database');
-const {success, notFound, serverError} = require('../../utils/response');
-const {getStripeProduct, updateProduct, updatePrice, createPrice, singleShotCreate} = require('../stripe/stripe');
+import {getAll, getById, insert, updateById, getCount, executeQuery} from '../../utils/database.js';
+import {success, notFound, serverError} from '../../utils/response.js';
+import {getStripeProduct, updateProduct, updatePrice, createPrice, singleShotCreate} from '../stripe/stripe.js';
 
-const {
+import {
     validateRequiredFields,
     filterAllowedFields,
     createErrorResponse,
     validateFieldValues
-} = require('../../utils/dataValidation');
+} from '../../utils/dataValidation.js';
 
 const REQUIRED_FIELDS = ['nome', 'display_name', 'isPaymentActive', 'valor_atual'];
 const UNIQUE_FIELDS = ['nome', 'display_name'];
@@ -62,7 +62,7 @@ async function _createStripeProductAndUpdatePlano(plano) {
     }
 }
 
-async function getPlanos(event) {
+export async function getPlanos(event) {
     try {
         const queryParams = event.queryStringParameters || {};
         const {
@@ -120,7 +120,7 @@ async function getPlanos(event) {
     }
 }
 
-async function getPlanoById(event) {
+export async function getPlanoById(event) {
     try {
         const id = event.routeParams?.id;
         if (!id) {
@@ -137,7 +137,7 @@ async function getPlanoById(event) {
     }
 }
 
-async function createPlano(event) {
+export async function createPlano(event) {
     try {
         const body = JSON.parse(event.body || '{}');
 
@@ -189,7 +189,7 @@ async function createPlano(event) {
     }
 }
 
-async function updatePlano(event) {
+export async function updatePlano(event) {
     try {
         const id = event.routeParams?.id;
         if (!id) {
@@ -320,10 +320,3 @@ async function updatePlano(event) {
         return serverError('Failed to update Plano');
     }
 }
-
-module.exports = {
-    getPlanos,
-    getPlanoById,
-    createPlano,
-    updatePlano
-};

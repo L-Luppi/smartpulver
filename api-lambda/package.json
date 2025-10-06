@@ -9,7 +9,7 @@
     "copy": "rsync -av --exclude='node_modules' --exclude='.git' --exclude='*.log' . ../lambda-deployment/",
     "copy-fallback": "find . -name 'node_modules' -prune -o -name '.git' -prune -o -type f -print | cpio -pdm ../lambda-deployment/",
     "deploy": "npm run build && cd ../lambda-deployment && zip -r ../modular-lambda.zip . && cd .. && aws lambda update-function-code --function-name api-lambda --zip-file fileb://modular-lambda.zip --region sa-east-1",
-    "lint": "eslint .",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "start": "node backend-server.js",
     "test": "jest"
@@ -24,7 +24,9 @@
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@jest/globals": "^30.2.0",
-    "eslint": "^9.0.0",
+    "eslint": "^9.35.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
     "jest": "^30.2.0"
   },
   "author": "SmartPulver Team",

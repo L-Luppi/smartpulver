@@ -1,8 +1,7 @@
-'use strict';
 /**
  * Standard CORS headers
  */
-const corsHeaders = {
+export const corsHeaders = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
@@ -16,7 +15,7 @@ const corsHeaders = {
  * @param {Object} additionalHeaders - Additional headers
  * @returns {Object} Lambda response object
  */
-function success(data, statusCode = 200, additionalHeaders = {}) {
+export function success(data, statusCode = 200, additionalHeaders = {}) {
     const response = {
         success: true,
         data,
@@ -45,7 +44,7 @@ function success(data, statusCode = 200, additionalHeaders = {}) {
  * @param {Object} additionalHeaders - Additional headers
  * @returns {Object} Lambda response object
  */
-function paginatedSuccess(items, total, limit, offset, statusCode = 200, additionalHeaders = {}) {
+export function paginatedSuccess(items, total, limit, offset, statusCode = 200, additionalHeaders = {}) {
     const response = {
         success: true,
         data: {
@@ -72,7 +71,7 @@ function paginatedSuccess(items, total, limit, offset, statusCode = 200, additio
  * @param {Object} additionalData - Additional error data
  * @returns {Object} Lambda response object
  */
-function error(message, statusCode = 400, additionalData = {}) {
+export function error(message, statusCode = 400, additionalData = {}) {
     return {
         statusCode,
         headers: corsHeaders,
@@ -90,7 +89,7 @@ function error(message, statusCode = 400, additionalData = {}) {
  * @param {string} resource - Resource name
  * @returns {Object} Lambda response object
  */
-function notFound(resource = 'Resource') {
+export function notFound(resource = 'Resource') {
     return error(`${resource} not found`, 404);
 }
 
@@ -99,7 +98,7 @@ function notFound(resource = 'Resource') {
  * @param {string} message - Custom message
  * @returns {Object} Lambda response object
  */
-function unauthorized(message = 'Unauthorized access') {
+export function unauthorized(message = 'Unauthorized access') {
     return error(message, 401);
 }
 
@@ -108,7 +107,7 @@ function unauthorized(message = 'Unauthorized access') {
  * @param {Error} err - Error object
  * @returns {Object} Lambda response object
  */
-function serverError(err) {
+export function serverError(err) {
     console.error('Server error:', err);
 
     const message = err instanceof Error ? err.message : 'Unknown error';
@@ -124,7 +123,7 @@ function serverError(err) {
  * @param {*} body - Response body (optional for OPTIONS)
  * @returns {Object} Lambda response object
  */
-function corsResponse(statusCode, body) {
+export function corsResponse(statusCode, body) {
     if (statusCode === undefined && body === undefined) {
         return {
             statusCode: 200,
@@ -145,18 +144,6 @@ function corsResponse(statusCode, body) {
  * @param {Object} errors - Validation errors
  * @returns {Object} Lambda response object
  */
-function validationError(message, errors = {}) {
+export function validationError(message, errors = {}) {
     return error(message, 400, { validationErrors: errors });
 }
-
-// Export all functions
-module.exports = {
-    success,
-    paginatedSuccess,
-    error,
-    notFound,
-    unauthorized,
-    serverError,
-    corsResponse,
-    validationError
-};

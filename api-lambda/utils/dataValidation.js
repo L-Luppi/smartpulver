@@ -1,6 +1,6 @@
-const { corsHeaders } = require('./response');
+import { corsHeaders } from './response.js';
 
-function filterAllowedFields(data, allowedFields) {
+export function filterAllowedFields(data, allowedFields) {
     return Object.keys(data)
         .filter(key => allowedFields.includes(key))
         .reduce((obj, key) => {
@@ -9,7 +9,7 @@ function filterAllowedFields(data, allowedFields) {
         }, {});
 }
 
-function validateRequiredFields(data, requiredFields) {
+export function validateRequiredFields(data, requiredFields) {
     const missing = [];
     const empty = [];
 
@@ -24,17 +24,17 @@ function validateRequiredFields(data, requiredFields) {
     return { missing, empty, isValid: missing.length === 0 && empty.length === 0 };
 }
 
-function validateRestrictedFields(data, restrictedFields) {
+export function validateRestrictedFields(data, restrictedFields) {
     const restricted = restrictedFields.filter(field => field in data);
     return { restricted, isValid: restricted.length === 0 };
 }
 
-function validateFieldValues(data, allowedValues) {
+export function validateFieldValues(data, allowedValues) {
     const validValues = allowedValues.filter(value => value in data);
     return {validValues, isValid: validValues.length === 0}
 }
 
-function createErrorResponse(statusCode, errorType, message, details = null) {
+export function createErrorResponse(statusCode, errorType, message, details = null) {
     return {
         statusCode,
         headers: corsHeaders,
@@ -48,12 +48,3 @@ function createErrorResponse(statusCode, errorType, message, details = null) {
         })
     };
 }
-
-// Export all functions
-module.exports = {
-    createErrorResponse,
-    validateRequiredFields,
-    validateRestrictedFields,
-    validateFieldValues,
-    filterAllowedFields
-};
