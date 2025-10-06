@@ -6,26 +6,47 @@ import CreateOrder from "../pages/Orders/Create";
 import ListAircrafts from "../pages/Aircrafts/List";
 import ProfilePage from "../pages/Profile";
 import Site from "../pages/Site";
+import LoginCallback from "./login";
+import ProtectedRoute from "./protectedRoute";
+import LoggedOut from "./loggedOut";
 
-import Teste from "../pages/Teste.tsx"
-
-export const router = (isDarkMode: boolean, setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>) =>
+export const router = (
+  isDarkMode: boolean,
+  setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>
+) =>
   createBrowserRouter([
+    // 🔹 Callback do Cognito (pública)
     {
-      path: "/",
-      element: <DefaultLayout isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />,
+      path: "/login",
+      element: <LoginCallback />,
+    },
+    {
+      path: "/logged-out",
+      element: <LoggedOut />,
+    },
+    // 🔹 Rotas protegidas (usuário precisa estar logado)
+    {
+      path: "/app",
+      element: (
+        <ProtectedRoute>
+          <DefaultLayout
+            isDarkMode={isDarkMode}
+            setIsDarkMode={setIsDarkMode}
+          />
+        </ProtectedRoute>
+      ),
       children: [
-        { path: "", element: <Home /> },
+        { index: true, element: <Home /> },
         { path: "aeronaves/criar", element: <CreateAircraft /> },
         { path: "aeronaves/listar", element: <ListAircrafts /> },
         { path: "ordens/criar", element: <CreateOrder /> },
         { path: "perfil", element: <ProfilePage /> },
       ],
     },
-      {
-      path: "/home",
+
+    // 🔹 Rota pública (ex.: landing page do site)
+    {
+      path: "/",
       element: <Site />,
-      children: [
-      ],
     },
   ]);

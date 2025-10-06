@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { AuthService } from "../services/getAccessToken";
 
-export interface Aircraft {
+export interface Manufacturer {
   id: string;
   prefix: string;
   model: string;
@@ -10,8 +10,8 @@ export interface Aircraft {
   type: string;
 }
 
-interface AircraftState {
-  items: Aircraft[];
+interface ManufacturerState {
+  items: Manufacturer[];
   page: number;
   rowsPerPage: number;
   total: number;
@@ -19,7 +19,7 @@ interface AircraftState {
   error: string | null;
 }
 
-const initialState: AircraftState = {
+const initialState: ManufacturerState = {
   items: [],
   page: 0,
   rowsPerPage: 5,
@@ -50,83 +50,83 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return res.json();
 }
 // 🔹 Listar aeronaves (com paginação)
-export const fetchAircrafts = createAsyncThunk(
-  "aircrafts/fetch",
+export const fetchManufacturers = createAsyncThunk(
+  "manufacturers/fetch",
   async ({ page, rowsPerPage }: { page: number; rowsPerPage: number }) => {
     return fetchWithAuth(
-      `${BASE_URL}/drones?page=${page}&limit=${rowsPerPage}`
+      `${BASE_URL}/manufacturers?page=${page}&limit=${rowsPerPage}`
     );
   }
 );
 
 // 🔹 Criar aeronave
-export const addAircraftAsync = createAsyncThunk(
-  "aircrafts/add",
-  async (aircraft: Omit<Aircraft, "id">) => {
+export const addManufacturerAsync = createAsyncThunk(
+  "manufacturers/add",
+  async (manufacturer: Omit<Manufacturer, "id">) => {
     return fetchWithAuth(`${BASE_URL}/drones`, {
       method: "POST",
-      body: JSON.stringify(aircraft),
+      body: JSON.stringify(manufacturer),
     });
   }
 );
 
 // 🔹 Editar aeronave
-export const editAircraftAsync = createAsyncThunk(
-  "aircrafts/edit",
-  async (aircraft: Aircraft) => {
-    return fetchWithAuth(`${BASE_URL}/drones/${aircraft.id}`, {
+export const editManufacturerAsync = createAsyncThunk(
+  "manufacturers/edit",
+  async (manufacturer: Manufacturer) => {
+    return fetchWithAuth(`${BASE_URL}/drones/${manufacturer.id}`, {
       method: "PUT",
-      body: JSON.stringify(aircraft),
+      body: JSON.stringify(manufacturer),
     });
   }
 );
 
 // 🔹 Excluir aeronave
-export const deleteAircraftAsync = createAsyncThunk(
-  "aircrafts/delete",
+export const deleteManufacturerAsync = createAsyncThunk(
+  "manufacturers/delete",
   async (id: string) => {
     await fetchWithAuth(`${BASE_URL}/drones/${id}`, { method: "DELETE" });
     return id;
   }
 );
 
-const aircraftSlice = createSlice({
-  name: "aircrafts",
+const manufacturerSlice = createSlice({
+  name: "manufacturers",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       // Listar
-      .addCase(fetchAircrafts.pending, (state) => {
+      .addCase(fetchManufacturers.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchAircrafts.fulfilled, (state, action) => {
+      .addCase(fetchManufacturers.fulfilled, (state, action) => {
         state.items = action.payload.data;
         state.total = action.payload.total;
         state.loading = false;
       })
-      .addCase(fetchAircrafts.rejected, (state, action) => {
+      .addCase(fetchManufacturers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Erro ao carregar aeronaves";
       })
 
       // Criar
-      .addCase(addAircraftAsync.fulfilled, (state, action) => {
+      .addCase(addManufacturerAsync.fulfilled, (state, action) => {
         state.items.push(action.payload);
       })
 
       // Editar
-      .addCase(editAircraftAsync.fulfilled, (state, action) => {
+      .addCase(editManufacturerAsync.fulfilled, (state, action) => {
         const index = state.items.findIndex((a) => a.id === action.payload.id);
         if (index >= 0) state.items[index] = action.payload;
       })
 
       // Excluir
-      .addCase(deleteAircraftAsync.fulfilled, (state, action) => {
+      .addCase(deleteManufacturerAsync.fulfilled, (state, action) => {
         state.items = state.items.filter((a) => a.id !== action.payload);
       });
   },
 });
 
-export default aircraftSlice.reducer;
+export default manufacturerSlice.reducer;

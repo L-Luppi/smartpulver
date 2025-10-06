@@ -1,19 +1,9 @@
 import { useState } from "react";
 import { Box, Divider, List } from "@mui/material";
-import { useAuthenticator } from "@aws-amplify/ui-react";
 import UserAvatarButton from "./UserAvatarButton";
 import UserDropdownMenu from "../molecules/UserDropdownMenu";
 
 export default function SidebarFooter() {
-  const { user, signOut } = useAuthenticator((context) => [
-    context.user,
-    context.signOut,
-  ]);
-
-  const username = user?.username || "Meu Perfil";
-  const truncatedUsername =
-    username.length > 15 ? username.slice(0, 15) + "..." : username;
-
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -22,18 +12,26 @@ export default function SidebarFooter() {
 
   const handleClose = () => setAnchorEl(null);
 
-  const handleLogout = () => {
-    handleClose();
-    signOut();
-  };
+const signOutRedirect = () => {
+  const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
+  const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
+  const postLogoutRedirect = import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI;
+
+  window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+    postLogoutRedirect
+  )}`;
+
+   localStorage.clear(); 
+  sessionStorage.clear();
+};
 
   return (
     <Box>
       <Divider />
       <List>
         <UserAvatarButton
-          name={username}
-          truncatedName={truncatedUsername}
+          name={"username"}
+          truncatedName={"truncatedUsername"}
           onClick={handleOpen}
         />
       </List>
@@ -42,7 +40,7 @@ export default function SidebarFooter() {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        onLogout={handleLogout}
+        onLogout={signOutRedirect}
       />
     </Box>
   );

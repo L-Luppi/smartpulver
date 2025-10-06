@@ -1,12 +1,11 @@
 import { Box, Container } from "@mui/material";
-import { useAuthenticator } from "@aws-amplify/ui-react";
+import { useAuth } from "react-oidc-context";
 import Sidebar from "../../components/organisms/SideBar";
-import ProfileHeader from "../../components/organisms/ProfileHeader";
-// import ProfileInfoCard from "../../components/molecules/ProfileInfoCard";
+import ProfileInfoCard from "../../components/molecules/ProfileInfoCard";
 
 export default function ProfilePage() {
-  const { user } = useAuthenticator((context) => [context.user]);
-
+ const user = useAuth();
+  console.log(user)
   return (
     <Box display="flex">
       {/* Sidebar */}
@@ -22,14 +21,11 @@ export default function ProfilePage() {
         }}
       >
         <Container maxWidth="md">
-          <ProfileHeader
-            name={user?.username || "Usuário"}
-            // picture={user?.attributes?.picture}
+          <ProfileInfoCard
+            email={user?.user?.profile.email
+|| "Não informado"}
+            phone={user?.user?.profile.email}
           />
-          {/* <ProfileInfoCard
-            email={user?.attributes?.email || "Não informado"}
-            phone={user?.attributes?.phone_number}
-          /> */}
         </Container>
       </Box>
     </Box>

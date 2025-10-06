@@ -1,21 +1,26 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
-import { Authenticator } from "@aws-amplify/ui-react";
-import { Amplify } from "aws-amplify";
+import App from "./App";
 import { Provider } from "react-redux";
-import outputs from "../amplify_outputs.json";
-import "@aws-amplify/ui-react/styles.css";
 import { store } from "./store/index.ts";
+import "@aws-amplify/ui-react/styles.css";
+import { AuthProvider } from "react-oidc-context";
 
-Amplify.configure(outputs);
+const cognitoAuthConfig = {
+  authority: import.meta.env.VITE_COGNITO_AUTHORITY,
+  client_id: import.meta.env.VITE_COGNITO_CLIENT_ID,
+  redirect_uri: import.meta.env.VITE_COGNITO_REDIRECT_URI,
+  response_type: import.meta.env.VITE_COGNITO_RESPONSE_TYPE,
+  scope: import.meta.env.VITE_COGNITO_SCOPE,
+};
+
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Authenticator>
+    <AuthProvider {...cognitoAuthConfig}>
       <Provider store={store}>
-          <App />
+        <App />
       </Provider>
-    </Authenticator>
+    </AuthProvider>
   </React.StrictMode>
 );

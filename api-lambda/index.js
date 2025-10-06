@@ -1,6 +1,6 @@
 const { corsResponse, serverError, notFound } = require('./utils/response');
 
-// Handlers para tabelas abertas (publicas)
+// Import all handler modules
 const manufacturersHandler = require('./handlers/manufacturers');
 const dronesHandler = require('./handlers/drones');
 const miscHandler = require('./handlers/misc');
@@ -53,28 +53,28 @@ const routes = {
 
 
     // Manufacturers endpoints
-    'GET manufacturers': manufacturersHandler.getManufacturers,
-    'GET manufacturers/{id}': manufacturersHandler.getManufacturerById,
+    'GET /api/v1/manufacturers': manufacturersHandler.getManufacturers,
+    'GET /api/v1/manufacturers/{id}': manufacturersHandler.getManufacturerById,
 
     // Drones endpoints
-    'GET drones': dronesHandler.getDrones,
-    'GET drones/{id}': dronesHandler.getDroneById,
+    'GET /api/v1/drones': dronesHandler.getDrones,
+    'GET /api/v1/drones/{id}': dronesHandler.getDroneById,
 
     // Misc content endpoints
-    'GET misc': miscHandler.getMiscContent,
-    'GET misc/{id}': miscHandler.getMiscContentById,
+    'GET /api/v1/misc': miscHandler.getMiscContent,
+    'GET /api/v1/misc/{id}': miscHandler.getMiscContentById,
 
     // Agrofit produtos endpoints
-    'GET agrofit/produtos': produtosHandler.getProdutos,
-    'GET agrofit/produtos/{id}': produtosHandler.getProdutoById,
+    'GET /api/v1/agrofit/produtos': produtosHandler.getProdutos,
+    'GET /api/v1/agrofit/produtos/{id}': produtosHandler.getProdutoById,
 
     // Agrofit culturas endpoints
-    'GET agrofit/culturas': culturasHandler.getCulturas,
-    'GET agrofit/culturas/{id}': culturasHandler.getCulturaById,
+    'GET /api/v1/agrofit/culturas': culturasHandler.getCulturas,
+    'GET /api/v1/agrofit/culturas/{id}': culturasHandler.getCulturaById,
 
     // Agrofit pragas endpoints
-    'GET agrofit/pragas': pragasHandler.getPragas,
-    'GET agrofit/pragas/{id}': pragasHandler.getPragaById
+    'GET /api/v1/agrofit/pragas': pragasHandler.getPragas,
+    'GET /api/v1/agrofit/pragas/{id}': pragasHandler.getPragaById
 };
 
 /**
@@ -126,7 +126,8 @@ function matchRoute(method, proxy) {
             return { handler, params };
         }
     }
-    return null;
+
+    return { match: false };
 }
 
 /**

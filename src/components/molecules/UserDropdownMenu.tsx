@@ -32,7 +32,7 @@ export default function UserDropdownMenu({
         <ListItemIcon>
           <Logout fontSize="small" />
         </ListItemIcon>
-        <ListItemText>Sair</ListItemText>
+        <ListItemText onClick={onLogout}>Sair</ListItemText>
       </MenuItem>
     </Menu>
   );
