@@ -1,16 +1,16 @@
-const { getAll, getById, insert, updateById, getCount, executeQuery} = require('../../utils/database');
-const { success, notFound, serverError } = require('../../utils/response');
-const { getLocationData, extractCityCode} = require('../../utils/locationService');
-const { validateRequiredFields, validateRestrictedFields, createErrorResponse, validateFieldValues, filterAllowedFields} = require('../../utils/dataValidation');
+import {getAll, getById, insert, updateById, getCount, executeQuery} from '../../utils/database.js';
+import {success, notFound, serverError } from '../../utils/response.js';
+import {getLocationData, extractCityCode} from '../../utils/locationService.js';
+import {validateRequiredFields, createErrorResponse, validateFieldValues, filterAllowedFields} from '../../utils/dataValidation.js';
 
 const REQUIRED_FIELDS = ['nome', 'username', 'email', 'fone', 'cognito_sub'];
 const UNIQUE_FIELDS = ['email', 'cpf_cnpj', 'fone', 'cognito_sub'];
 const ALLOWED_SORT_FIELDS = ['id', 'nome', 'username'];
-const ALLOWED_UPDATE_FIELDS = ['nome','username', 'email', 'validade_plano', 'fone', 'cep',
-    'id_cidade_ibge', 'endereco','numero','bairro','complemento','status'];
+const ALLOWED_UPDATE_FIELDS = ['nome','username', 'email', 'validade_plano', 'fone', 'cep', 'cpf_cnpj',
+    'id_cidade_ibge', 'endereco','numero','bairro','complemento','status','cognito_sub'];
 const VALID_STATUS = ['ativo', 'inativo', 'cancelado', 'suspenso', 'registrado'];
 
-async function getAssinantes(event) {
+export async function getAssinantes(event) {
     try {
         const queryParams = event.queryStringParameters || {};
         const {
@@ -66,7 +66,7 @@ async function getAssinantes(event) {
     }
 }
 
-async function getAssinanteById(event) {
+export async function getAssinanteById(event) {
     try {
         const id = event.routeParams?.id;
         if (!id) {
@@ -87,7 +87,7 @@ async function getAssinanteById(event) {
     }
 }
 
-async function createAssinante(event) {
+export async function createAssinante(event) {
     try {
         const body = JSON.parse(event.body || '{}');
 
@@ -100,15 +100,17 @@ async function createAssinante(event) {
 
         // VALIDATE UNIQUE FIELDS
         for (const field of UNIQUE_FIELDS) {
-            const query = `SELECT id FROM assinante WHERE ${field} = ?`;
-            const [existing] = await executeQuery(query, [body[field]]);
-            if (existing) {
-                return createErrorResponse(409, 'CONFLICT', `Já existe um assinante com este '${field}' cadastrado`,
-                    { field, value: body[field] });
+            if (body[field]) {
+                const query = `SELECT id FROM assinante WHERE ${field} = ?`;
+                const [existing] = await executeQuery(query, [body[field]]);
+                if (existing) {
+                    return createErrorResponse(409, 'CONFLICT', `Já existe um assinante com este '${field}' cadastrado`,
+                        { field, value: body[field] });
+                }
             }
         }
 
-        //filter to prevent undesired injections
+        //filter to prevent undesired injection
         const data = filterAllowedFields(body, ALLOWED_UPDATE_FIELDS);
         const enrichedData = {...data,
             status: 'registrado',
@@ -129,143 +131,82 @@ async function createAssinante(event) {
     }
 }
 
-
-async function updateAssinante(event) {
+export async function updateAssinante(event) {
     try {
         const id = event.routeParams?.id;
         if (!id) {
             return serverError('id do assinante is required', 400);
         }
-        const body = JSON.parse(event.body || '{}');
 
-        // 1. CHECK IF RECORD EXISTS
-        const existing = await getById('assinante', id, '', 'id');
-        if (!existing) {
+        const currentSubscriber = await getById('assinante', id, '', 'id');
+        if (!currentSubscriber) {
             return createErrorResponse(404, 'NOT_FOUND',
                 'Assinante not found', { id: parseInt(id) });
         }
 
-        const allowedFields = ['nome', 'username', 'email', 'validade_plano', 'fone', 'cpf_cnpj',
-            'cep', 'id_cidade_ibge', 'endereco','numero','bairro','complemento','status', 'cognito_sub'];
+        const body = JSON.parse(event.body || '{}');
+        const cleanData = filterAllowedFields(body, ALLOWED_UPDATE_FIELDS);
 
-        // VALIDA TENTATIVA DE ALTERAR COLUNAS RESTRITAS
-        const restrictedFields = ['id', 'createdAt', 'updatedAt'];
-        const restrictedValidation = validateRestrictedFields(body, restrictedFields);
-
-        if(!restrictedValidation.isValid) {
-            return createErrorResponse(400, 'FORBIDDEN_FIELDS',
-                'Cannot update restricted fields', {
-                    restricted_fields: restrictedValidation.restricted,
-                    allowed_fields: allowedFields
-                });
+        if (Object.keys(cleanData).length === 0) {
+            return createErrorResponse(400, 'BAD_REQUEST', 'No valid fields to update');
         }
 
-        // VALIDATE DUPLICATES
-        const duplicateChecks = [
-            { field: 'email', value: body.email },
-            { field: 'username', value: body.username },
-            { field: 'fone', value: body.fone },
-            { field: 'cpf_cnpj', value: body.cpf_cnpj }
-        ].filter(check => check.value); // Only check fields that have values
-
-        // Only validate duplicates if any of unique value fields are informed
-        if (duplicateChecks.length > 0) {
-            // BUILD QUERY TO CHECK ALL DUPLICATES
-            const conditions = duplicateChecks.map((check) => `${check.field} = ?`).join(' OR ');
-            const values = duplicateChecks.map((check) => check.value);
-            values.push(id); //ADICIONA ID ATUAL PARA EXCLUIR DA VALIDAÇÃO
-
-            const duplicatesQuery = `SELECT id, email, username, fone, cpf_cnpj
-                                 FROM assinante 
-                                 WHERE (${conditions}) AND id != ?`;
-
-            console.log("QUERY =>", duplicatesQuery, values);
-            const existingRecords = await executeQuery(duplicatesQuery, values);
-
-            if (existingRecords && existingRecords.length > 0) {
-                const foundDuplicates = [];
-                duplicateChecks.forEach((check) => {
-                    const duplicate = existingRecords.find(record =>
-                        record[check.field] === check.value
-                    );
-                    if (duplicate) {
-                        foundDuplicates.push({
-                            field: check.field,
-                            value: check.value,
-                            existing_id: duplicate.id
-                        });
-                    }
-                });
-
-                if(foundDuplicates.length > 0) {
-                    const fieldNames = foundDuplicates.map(d => d.field);
-                    const message = foundDuplicates.length === 1 ?
-                        `${fieldNames[0]} já cadastrado` :
-                        `Campos já cadastrados: ${fieldNames.join(', ')}`;
-
-                    return createErrorResponse(409, 'REGISTROS DUPLICADOS', message, {
-                        duplicates: foundDuplicates,
-                        total_duplicates: foundDuplicates.length
+        for (const field of UNIQUE_FIELDS) {
+            if (cleanData[field]) {
+                const query = `SELECT id FROM assinante WHERE ${field} = ? AND id <> ?`;
+                const [existing] = await executeQuery(query, [cleanData[field], id]);
+                if (existing) {
+                    return createErrorResponse(409, 'CONFLICT', `Já existe um assinante com este '${field}' cadastrado`, {
+                        field,
+                        value: cleanData[field]
                     });
                 }
             }
         }
 
-        // VALIDATE AND EXTRACT CITY CODE
-        let cityCode = null;
-        if(body.id_cidade_ibge && !body.id_cidade_ibge.trim() === '') {
-            cityCode = body.id_cidade_ibge
-        } else {
-            cityCode = extractCityCode(body.location);
+        if (cleanData.status !== undefined) {
+            cleanData.status = cleanData.status.trim().toLowerCase();
+            if (!validateFieldValues(cleanData.status, VALID_STATUS)) {
+                return serverError('Invalid status.  Valid options: ' + VALID_STATUS.join(', '), 400);
+            }
         }
 
-        if ( cityCode ) {
-            const cityExists = await getById('ibge_cidades', cityCode, '', 'codigo')
-            if (!cityExists || cityExists.length === 0) {
-                return createErrorResponse(400, 'ERRO DE VALIDAÇÃO DA CIDADE',
-                    'CODIGO DA CIDADE INVÁLIDO', {
-                        field: 'location',
-                        provided_code: cityCode
+        // VALIDATE AND EXTRACT CITY CODE if the field is present in the request
+        if (Object.hasOwn(cleanData, 'id_cidade_ibge')) {
+            const cityCode = extractCityCode(cleanData.id_cidade_ibge);
+
+            // A non-null value was provided for the city, but it couldn't be parsed.
+            if (!cityCode && cleanData.id_cidade_ibge !== null && cleanData.id_cidade_ibge !== '') {
+                 return createErrorResponse(400, 'VALIDATION_ERROR',
+                    'Formato de `id_cidade_ibge` inválido. Forneça um código de cidade ou um objeto de localização válido.', {
+                        field: 'id_cidade_ibge',
+                        provided_value: cleanData.id_cidade_ibge
                     });
             }
-            body.id_cidade_ibge = cityCode;
-        }
 
-        const data = {};
-        allowedFields.forEach(field => {
-            if (body[field] !== undefined) {
-                data[field] = body[field];
+            if (cityCode) {
+                // If a code was extracted, validate it against the database
+                const cityExists = await getById('ibge_cidades', cityCode, '', 'codigo');
+                if (!cityExists) {
+                    return createErrorResponse(400, 'VALIDATION_ERROR',
+                        'Código de cidade inválido.', {
+                            field: 'id_cidade_ibge',
+                            provided_code: cityCode
+                        });
+                }
+                // Ensure the final, validated code from the database is what's stored
+                cleanData.id_cidade_ibge = cityExists.codigo;
+            } else {
+                // If the provided value was null or empty, set it to null in the DB
+                cleanData.id_cidade_ibge = null;
             }
-        });
-
-        // Special validation for status field
-        if (data.status !== undefined) {
-            const validStatus = ['ativo', 'inativo', 'cancelado', 'suspenso'];
-            const statusLower = data.status.toLowerCase();
-
-            if (!validStatus.includes(statusLower)) {
-                return serverError('Invalid status. Valid options: ' + validStatus.join(', '), 400);
-            }
-
-            // Normalize status to lowercase
-            data.status = statusLower;
         }
 
-        if (Object.keys(data).length === 0) {
-            return serverError('Nothing to update', 400);
-        }
-
-        // Set defaults
-        data.updatedAt = Date.now();
-
-        const result = await updateById('assinante', id, data, 'id');
-
-        if (!result) {
-            return notFound('Assinante not found');
-        }
+        const enrichedData = {...cleanData, updatedAt: Date.now()}
+        const updatedAssinante = await updateById('assinante', id, enrichedData, 'id');
 
         return success({
-            data: result,
+            data: updatedAssinante,
             message: 'Assinante Atualizado!'
         });
 
@@ -274,45 +215,3 @@ async function updateAssinante(event) {
         return serverError('Failed to update assinante');
     }
 }
-
-module.exports = {
-    getAssinantes,
-    getAssinanteById,
-    createAssinante,
-    updateAssinante
-};
-
-
-
-/*
-// VALIDATE AND EXTRACT CITY CODE
-let cityCode = null;
-if(body.id_cidade_ibge && !body.id_cidade_ibge.trim() === '') {
-    cityCode = body.id_cidade_ibge
-} else {
-    cityCode = extractCityCode(body.location);
-}
-
-if ( cityCode ) {
-    const cityExists = await getById('ibge_cidades', cityCode, '', 'codigo')
-    if (!cityExists || cityExists.length === 0) {
-        return createErrorResponse(400, 'ERRO DE VALIDAÇÃO DA CIDADE',
-            'CODIGO DA CIDADE INVÁLIDO', {
-                field: 'location',
-                provided_code: cityCode
-            });
-    }
-    body.id_cidade_ibge = cityCode;
-}
-
-// Prepare data (only allow specific fields)
-const allowedFields = ['nome', 'username', 'email', 'validade_plano', 'fone', 'cpf_cnpj',
-    'cep', 'id_cidade_ibge', 'endereco','numero','bairro','complemento','status', 'cognito_sub'];
-
-const data = {};
-allowedFields.forEach(field => {
-    if (body[field] !== undefined) {
-        data[field] = body[field];
-    }
-});
-*/

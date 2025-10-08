@@ -147,3 +147,18 @@ export function corsResponse(statusCode, body) {
 export function validationError(message, errors = {}) {
     return error(message, 400, { validationErrors: errors });
 }
+
+export function createErrorResponse(statusCode, errorType, message, details = null) {
+    return {
+        statusCode,
+        headers: corsHeaders,
+        body: JSON.stringify({
+            success: false,
+            error: {
+                type: errorType,
+                message: message,
+                details: details
+            }
+        })
+    };
+}

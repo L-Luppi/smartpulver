@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import { getById, updateById } from '../../utils/database.js';
 import { success, serverError } from '../../utils/response.js';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function singleShotCreate(produto) {
     try {
@@ -59,6 +60,38 @@ export async function updateProduct(prodId, payload) {
     return await stripe.products.update(prodId, payload);
 }
 
+/**
+ * Creates a new customer in Stripe
+ * @param {object} assinante - the subscriber object from app
+ * @returns {Promise<object>} - Stripe customer object
+ */
+
+export async function createStripeCustomer(assinante) {
+    return stripe.customers.create({
+        name: assinante.nome,
+        email: assinante.email,
+        phone: assinante.fone,
+        metadata: {
+           assinante_id: assinante.id,
+        },
+    });
+}
+
+/**
+ * Creates a new subscription in Stripe
+ * @param {string} customerId - Stripe customer ID
+ * @param {string} priceId - Stripe price ID
+ * @returns {Promise<object>} The created Stripe subscription object
+ */
+export async function createStripeSubscription(customerId, priceId) {
+    return stripe.subscriptions.create({
+        customer: customerId,
+        items: [{price: priceId}],
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription'},
+        expand: ['latest_invoice.payment_intent'],
+    });
+}
 // PRICES
 
 export async function createPrice(priceData) {
@@ -129,40 +162,94 @@ export async function checkout(event) {
 }
 
 export async function webhook(event) {
+    // 1. SECURELY PARSE THE EVENT
+    // This is the part you will implement. It's critical for security.
+    const sig = event.headers['stripe-signature']; // Use lowercase header name
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    let stripeEvent;
 
-    const body = JSON.parse(event.body);
-
-    //Handle stripe events
-    switch (body.type) {
-        case 'payment_intent.created':
-        { const paymentIntent = body.data.object;
-            console.log('Stripe Payment Intent created');
-            console.log(paymentIntent);
-            break;
-        }
-        case 'payment_intent.succeeded':
-            { const paymentIntent = body.data.object;
-            console.log (`Stripe Payment Intent for ${paymentIntent.amount} was successful!'`);
-            break; }
-        case 'payment_method.attached':
-            { const paymentMethod = event.data.object;
-            console.log(`Stripe payment method ${paymentMethod}`);
-            break; }
-        case 'invoice_payment.failed':
-            console.log('Stripe invoice payment failed');
-            break;
-        case 'product.created':
-            console.log('Stripe product created *** IF CREATION DIRECTLY IN STRIPE IMPLEMENT HANDLE ***\n', body.data.object);
-            // in case a product is created direclty in stripe object should
-            // be used to create local instance of product in app DB
-            break;
-        case 'product.updated':
-            console.log('Stripe product updated *** TO BE IMPLEMENTED *** \n', body.data.object);
-            // in case product is updated in stripe returned object should
-            // be used to update app DB data
-            break;
-        default:
-            console.log(new Date().toLocaleString(), `Unhandled event type ${body.type}`);
+    try {
+        // Use the Stripe library to safely construct the event
+        stripeEvent = stripe.webhooks.constructEvent(event.body, sig, endpointSecret);
+    } catch (err) {
+        console.error(`Webhook signature verification failed.`, err.message);
+        return serverError(`Webhook Error: ${err.message}`, 400);
     }
-    return success();
+
+    // 2. HANDLE THE VERIFIED EVENT
+    console.log(`[Stripe Webhook] Received event: ${stripeEvent.type}`);
+
+    try {
+        switch (stripeEvent.type) {
+            // A payment for a subscription succeeded (either the first payment or a renewal).
+            case 'invoice.payment_succeeded': {
+                const invoice = stripeEvent.data.object;
+                // The subscription object is available on the invoice
+                const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+
+                const localAssinatura = await getById('assinatura', subscription.id, '', 'stripe_subscription_id');
+
+                if (localAssinatura) {
+                    const dataToUpdate = {
+                        stripe_status: subscription.status, // Should be 'active'
+                        current_period_end: subscription.current_period_end * 1000, // Convert to ms
+                        updatedAt: Date.now(),
+                    };
+                    await updateById('assinatura', localAssinatura.id, dataToUpdate);
+                    console.log(`[DB Sync] Updated assinatura ${localAssinatura.id} to status ${subscription.status}.`);
+                } else {
+                    console.warn(`[DB Sync] Received 'invoice.payment_succeeded' for unknown subscription ${subscription.id}.`);
+                }
+                break;
+            }
+
+            // A subscription has been updated (e.g., user cancels, trial ends).
+            case 'customer.subscription.updated': {
+                const subscription = stripeEvent.data.object;
+                const localAssinatura = await getById('assinatura', subscription.id, '', 'stripe_subscription_id');
+
+                if (localAssinatura) {
+                    const dataToUpdate = {
+                        stripe_status: subscription.status,
+                        current_period_end: subscription.current_period_end * 1000, // Convert to ms
+                        renova_automatico: !subscription.cancel_at_period_end, // if they cancel, renova_automatico becomes false
+                        updatedAt: Date.now(),
+                    };
+                    await updateById('assinatura', localAssinatura.id, dataToUpdate);
+                    console.log(`[DB Sync] Updated assinatura ${localAssinatura.id} due to 'customer.subscription.updated'.`);
+                } else {
+                    console.warn(`[DB Sync] Received 'customer.subscription.updated' for unknown subscription ${subscription.id}.`);
+                }
+                break;
+            }
+
+            // A subscription has been definitively deleted.
+            case 'customer.subscription.deleted': {
+                const subscription = stripeEvent.data.object;
+                const localAssinatura = await getById('assinatura', subscription.id, '', 'stripe_subscription_id');
+
+                if (localAssinatura) {
+                    const dataToUpdate = {
+                        stripe_status: 'canceled', // Or your preferred final status
+                        updatedAt: Date.now(),
+                    };
+                    await updateById('assinatura', localAssinatura.id, dataToUpdate);
+                    console.log(`[DB Sync] Canceled assinatura ${localAssinatura.id} due to 'customer.subscription.deleted'.`);
+                } else {
+                    console.warn(`[DB Sync] Received 'customer.subscription.deleted' for unknown subscription ${subscription.id}.`);
+                }
+                break;
+            }
+
+            default:
+                console.log(`Unhandled event type ${stripeEvent.type}`);
+        }
+    } catch (dbError) {
+        console.error('[DB Sync] Error handling webhook event:', dbError);
+        // We return a 200 to Stripe to prevent retries for a database issue,
+        // but we log the error for internal monitoring.
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    return success({ received: true });
 }

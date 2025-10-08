@@ -1,10 +1,16 @@
-const { getAll, getById, insert, updateById, getCount, executeQuery } = require('../../utils/database');
-const { success, notFound, serverError } = require('../../utils/response');
+import { getAll, getById, insert, updateById, getCount, executeQuery } from '../../utils/database.js';
+import { success, notFound, serverError, createErrorResponse } from '../../utils/response.js';
+import { createStripeCustomer, createStripeSubscription } from '../stripe/stripe.js';
 
-async function getAssinaturas(event) {
+export async function getAssinaturas(event) {
     try {
         const queryParams = event.queryStringParameters || {};
-        const { limit = 50, offset = 0, id_assinante, id_plano, status } = queryParams;
+        const { limit = 50,
+            offset = 0,
+            id_assinante,
+            id_plano,
+            status
+        } = queryParams;
 
         // Build condition for simple filtering on assinaturas table
         let condition = '';
@@ -31,7 +37,7 @@ async function getAssinaturas(event) {
         }
 
         // Get basic subscription data using standard getAll
-        const result = await getAll('assinatura', condition, params, parseInt(limit), parseInt(offset), 'dt_assinatura DESC');
+        const result = await getAll('assinatura', condition, params, parseInt(limit), parseInt(offset), 'createdAt DESC');
         const totalCount = await getCount('assinatura', condition, params);
 
         return success({
@@ -52,7 +58,7 @@ async function getAssinaturas(event) {
 }
 
 // GET /api/v1/smart/subscriptions/{id} - Enhanced with JOIN data
-async function getAssinaturaById(event) {
+export async function getAssinaturaById(event) {
     try {
         const id = event.pathParameters?.id;
         if (!id) {
@@ -98,88 +104,92 @@ async function getAssinaturaById(event) {
     }
 }
 
-async function createAssinatura(event) {
-
-    let diasPlano = 1
-    let valorPlano = 0.00
-
+export async function createAssinatura(event) {
     try {
         const body = JSON.parse(event.body || '{}');
+        const { id_assinante, id_plano } = body;
 
-        // Validate required fields
-        const requiredFields = ['id_assinante', 'id_plano'];
-        const missingFields = requiredFields.filter(field => !body[field]);
-
-        if (missingFields.length > 0) {
-            return serverError(`Missing required fields: ${missingFields.join(', ')}`, 400);
+        if (!id_assinante || !id_plano) {
+            return createErrorResponse(400, 'MISSING_PARAMETERS', 'id_assinante and id_plano are required.');
         }
 
-        // Verify that assinante and plan exist
-        const assinante = await getById('assinante', body.id_assinante);
+        const assinante = await getById('assinante', id_assinante);
         if (!assinante) {
-            return serverError('Assinante not found', 404);
+            return notFound('Assinante');
         }
 
-        const plano = await getById('plano', body.id_plano);
+        const plano = await getById('plano', id_plano);
         if (!plano) {
-            return serverError('Plano not found', 404);
+            return notFound('Plano');
+        }
+
+        if (!plano.price_id) {
+            return createErrorResponse(400, 'PLAN_NOT_BILLABLE', 'Plano selected is not configured for payment. Missing Stripe Price ID.');
+        }
+
+        // Step 1: Find or Create a Stripe Customer
+        let customerId = assinante.stripe_customer_id;
+        if (!customerId) {
+            console.log(`Stripe customer not found for assinante ${assinante.id}. Creating new customer...`);
+            const customer = await createStripeCustomer(assinante);
+            customerId = customer.id;
+            // Save the new customer ID to the local assinante record
+            await updateById('assinante', assinante.id, { stripe_customer_id: customerId, updatedAt: Date.now() });
+            console.log(`New Stripe customer ${customerId} created and saved.`);
+        }
+
+        // Step 2: Create the Stripe Subscription
+        console.log(`Creating Stripe subscription for customer ${customerId} with price ${plano.price_id}`);
+        const subscription = await createStripeSubscription(customerId, plano.price_id);
+
+        // Step 3: Create the local assinatura record
+        const now = Date.now();
+
+        const newAssinaturaData = {
+            id_assinante: assinante.id,
+            id_plano: plano.id,
+            stripe_subscription_id: subscription.id,
+            stripe_price_id: plano.price_id,
+            stripe_status: subscription.status, // The source of truth for the subscription status
+            // Handle null current_period_end for incomplete subscriptions
+            current_period_end: subscription.current_period_end ? subscription.current_period_end * 1000 : null,
+            valor_pago: plano.valor_atual,
+            renova_automatico: body.renova_automatico !== undefined ? body.renova_automatico : true,
+            createdAt: now,
+            updatedAt: now,
+        };
+
+        const localAssinatura = await insert('assinatura', newAssinaturaData);
+
+        // Step 4: Return the client secret IF payment is required
+        const clientSecret = subscription.latest_invoice?.payment_intent?.client_secret;
+
+        if (clientSecret) {
+            return success({
+                message: 'Subscription initiated! Please confirm payment.',
+                requiresAction: true,
+                assinatura: localAssinatura,
+                clientSecret: clientSecret,
+            }, 201);
         } else {
-            diasPlano = parseInt(plano.body.data.duracao_dias);
-            valorPlano = parseFloat(plano.body.data.valor_atual);
+            return success({
+                message: 'Subscription created successfully! No immediate payment required.',
+                requiresAction: false,
+                assinatura: localAssinatura,
+            }, 201);
         }
-
-        // Prepare data
-        const allowedFields = ['id_plano', 'id_assinante', 'dt_assinatura', 'dt_vigencia', 'renova_automatico', 'valor_pago','status'];
-        const data = {};
-
-        allowedFields.forEach(field => {
-            if (body[field] !== undefined) {
-                data[field] = body[field];
-            }
-        });
-
-        // Set defaults
-        if (!data.status) data.status = 'ativo';
-        if (!data.dt_assinatura) data.dt_assinatura = new Date().toISOString();
-
-        // Calculate end date based on plan duration
-        if (!data.dt_vigencia) {
-            const vigencia = new Date(data.dt_assinatura); // evita que vigência fique diferente da assinatura
-
-            if ( diasPlano < 30 ) {
-                vigencia.setDate(vigencia.getDate()+diasPlano);
-
-            } else if ( diasPlano >= 30 && diasPlano <= 360) {
-                const diasExtras = diasPlano % 30;
-                const mesesVigencia = Math.floor(diasPlano/30)
-                vigencia.setMonth(vigencia.getMonth() + mesesVigencia);
-                if ( diasExtras > 0 ) vigencia.setDate(vigencia.getDate()+diasExtras);
-            } else {
-                vigencia.setFullYear(vigencia.getFullYear() + 1);
-            }
-            data.dt_vigencia = vigencia;
-        }
-
-        // Set valor_pago from plan if not provided
-        if (!data.valor_pago) {
-            data.valor_pago = valorPlano;
-        }
-
-        const result = await insert('assinaturas', data);
-
-        return success({
-            data: result,
-            message: 'Nova Assinatura Adicionada!'
-        }, 201);
 
     } catch (error) {
         console.error('CREATE Subscription Error:', error);
+        if (error.type === 'StripeCardError') {
+            return createErrorResponse(400, 'STRIPE_CARD_ERROR', error.message);
+        }
         return serverError('Failed to create subscription');
     }
 }
 
 // PUT /api/v1/smart/subscriptions/{id}
-async function updateAssinatura(event) {
+export async function updateAssinatura(event) {
     try {
         console.log('UPDATE Subscription - Event:', JSON.stringify(event, null, 2));
 
@@ -191,7 +201,7 @@ async function updateAssinatura(event) {
         const body = JSON.parse(event.body || '{}');
 
         // Prepare data
-        const allowedFields = ['id_plano', 'id_assinante', 'dt_assinatura', 'dt_vigencia', 'renova_automatico', 'valor_pago','status'];
+        const allowedFields = ['id_plano', 'id_assinante', 'current_period_end', 'renova_automatico', 'valor_pago','stripe_status'];
         const data = {};
 
         allowedFields.forEach(field => {
@@ -220,10 +230,3 @@ async function updateAssinatura(event) {
         return serverError('Failed to update subscription');
     }
 }
-
-module.exports = {
-    getAssinaturas,
-    getAssinaturaById,
-    createAssinatura,
-    updateAssinatura
-};

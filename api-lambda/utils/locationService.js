@@ -29,7 +29,7 @@ export async function getLocationByCodigoIBGE(codigo_cidade_ibge) {
 /**
  * Enrich multiple records with location data
  * @param {Array} registros - Array of records with city_code field
- * @param {string} cityCode - Field name containing city code (default: 'city_code')
+ * @param {string} cityCode - Field name containing city code (default: 'id_cidade_ibge')
  * @returns {Array} Records enriched with location data
  */
 export async function getLocationData(registros, cityCode = 'id_cidade_ibge') {
@@ -94,22 +94,29 @@ export async function getLocationData(registros, cityCode = 'id_cidade_ibge') {
 }
 
 export function extractCityCode(locationData) {
-    if (!locationData) return null;
-
-    // Direct number/string
-    if (typeof locationData === 'number' ||
-        (typeof locationData === 'string' && !isNaN(locationData))) {
-        return parseInt(locationData);
+    // Handles null, undefined, empty strings
+    if (!locationData) {
+        return null;
     }
 
-    // Object with various possible structures
-    if (typeof locationData === 'object') {
+    // Direct number or a string that can be parsed to a number
+    if (typeof locationData === 'number') {
+        return locationData;
+    }
+    if (typeof locationData === 'string' && !isNaN(parseInt(locationData, 10))) {
+        return parseInt(locationData, 10);
+    }
+
+    // Object with various possible structures. Crucially, check for null.
+    if (typeof locationData === 'object' && locationData !== null) {
         return locationData.codigo_ibge ||
             locationData.codigo ||
-            locationData.cidade?.codigo ||
+            locationData.id_cidade_ibge ||
             locationData.cidade?.codigo_ibge ||
-            locationData.codigo_ibge ||
+            locationData.cidade?.codigo ||
             null;
     }
+
+    // If it's none of the above (e.g., a non-numeric string), return null
     return null;
 }

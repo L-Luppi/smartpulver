@@ -1,6 +1,7 @@
 {
   "name": "smartpulver-api",
   "version": "1.0.0",
+  "type": "module",
   "description": "SmartPulver Multi-tenant API with modular architecture",
   "main": "index.js",
   "scripts": {
@@ -11,7 +12,7 @@
     "deploy": "npm run build && cd ../lambda-deployment && zip -r ../modular-lambda.zip . && cd .. && aws lambda update-function-code --function-name api-lambda --zip-file fileb://modular-lambda.zip --region sa-east-1",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "start": "node backend-server.js",
+    "start": "node --env-file=.env backend-server.js",
     "test": "jest"
   },
   "dependencies": {

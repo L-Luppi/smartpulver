@@ -1,5 +1,5 @@
-const { getAll, executeQuery} = require('../utils/database');
-const { success, notFound, serverError } = require('../utils/response');
+import { getAll, executeQuery} from '../utils/database.js';
+import { success, notFound, serverError } from '../utils/response.js';
 
 /* exemplos de uso
 # All states
@@ -16,7 +16,7 @@ GET /api/v1/cidades/RJ?limit=20
  */
 
 
-async function getUF() {
+export async function getUF() {
     try {
         const result = await getAll('ibge_uf','',[], null, 0,'sigla');
 
@@ -30,7 +30,7 @@ async function getUF() {
 
 }
 
-async function getCidades(event) {
+export async function getCidades(event) {
     try {
 
         const queryParams = event.queryStringParameters || {};
@@ -107,7 +107,7 @@ async function getCidades(event) {
     }
 }
 
-async function getCidadesByUF(event) {
+export async function getCidadesByUF(event) {
     try {
         console.log('event', event);
         const sigla = event.routeParams?.sigla;
@@ -188,7 +188,7 @@ async function getCidadesByUF(event) {
     }
 }
 
-async function getCidade(event) {
+export async function getCidade(event) {
     try {
         const cod_ibge = event.routeParams?.cod_ibge
         if (!cod_ibge) {
@@ -226,9 +226,3 @@ async function getCidade(event) {
     }
 }
 
-module.exports = {
-    getUF,
-    getCidades,
-    getCidadesByUF,
-    getCidade
-};

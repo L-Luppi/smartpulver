@@ -5,40 +5,46 @@ config({path: path.resolve(__dirname, '.env')});
 
 import express from "express";
 import cors from "cors";
-import {handler} from "./index"; // Import the main handler
-import {closePool} from "./utils/database";
+import {handler} from "./index.js"; // Import the main handler
+import {closePool} from "./utils/database.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware to parse JSON request bodies for POST/PUT requests
-app.use(express.json());
 app.use(cors());
-
 
 /**
  * A helper function to format the Lambda response into a standard
  * HTTP response that Express can send back to the client.
  */
 const sendLambdaResponse = (res, lambdaResponse) => {
-    // Set headers from the Lambda response, if any
     if (lambdaResponse.headers) {
         res.set(lambdaResponse.headers);
     }
-
-    // If the body is a string (as it often is from Lambda), parse it.
     const body = typeof lambdaResponse.body === 'string'
         ? JSON.parse(lambdaResponse.body)
         : lambdaResponse.body;
-
     res.status(lambdaResponse.statusCode).json(body);
 };
 
-// Create a "catch-all" route that mimics AWS API Gateway's proxy integration
-app.all(/.*/, async (req, res) => {
-    //console.log(`[local-server] ${req.method} ${req.originalUrl}`);
+// 1. Define the specific webhook route BEFORE the general JSON parser.
+// Use a regular expression to match any potential stage prefix (like /prod) and use express.raw().
+app.post(/.*\/api\/v1\/stripe\/webhook/, express.raw({type: 'application/json'}), async (req, res) => {
+    const event = {
+        httpMethod: req.method,
+        path: req.originalUrl,
+        headers: req.headers,
+        body: req.body.toString(), // Pass the raw body as a string
+    };
+    const result = await handler(event);
+    sendLambdaResponse(res, result);
+});
 
-    // 2. Construct the 'event' object that the Lambda handler expects
+// 2. For all other routes, use the standard express.json() middleware.
+app.use(express.json());
+
+// 3. Create a "catch-all" for all other routes.
+app.all(/.*/, async (req, res) => {
     const event = {
         httpMethod: req.method,
         path: req.originalUrl,
@@ -46,11 +52,7 @@ app.all(/.*/, async (req, res) => {
         body: req.body ? JSON.stringify(req.body) : null,
         headers: req.headers,
     };
-
-    // 3. Call the main handler with the simulated event
     const result = await handler(event);
-
-    // 4. Send the handler's response back to the client (e.g., Postman)
     sendLambdaResponse(res, result);
 });
 
@@ -59,7 +61,6 @@ const server = app.listen(PORT, () => {
     console.log(`✅ Listening for all API routes on http://localhost:${PORT}`);
 });
 
-// Gracefully close the database pool when the server shuts down (Ctrl+C)
 process.on('SIGINT', async () => {
     console.log('\nSIGINT received. Closing server and database pool...');
     await closePool();

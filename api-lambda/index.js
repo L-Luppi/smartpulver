@@ -1,12 +1,12 @@
 import { corsResponse, serverError, notFound } from './utils/response.js';
 
 // Import all handler modules
-import * as manufacturersHandler from './handlers/manufacturers.js';
-import * as dronesHandler from './handlers/drones.js';
-import * as miscHandler from './handlers/misc.js';
-import * as produtosHandler from './handlers/agrofit/produtos.js';
-import * as culturasHandler from './handlers/agrofit/culturas.js';
-import * as pragasHandler from './handlers/agrofit/pragas.js';
+//import * as manufacturersHandler from './handlers/manufacturers.js';
+//import * as dronesHandler from './handlers/drones.js';
+//import * as miscHandler from './handlers/misc.js';
+//import * as produtosHandler from './handlers/agrofit/produtos.js';
+//import * as culturasHandler from './handlers/agrofit/culturas.js';
+//import * as pragasHandler from './handlers/agrofit/pragas.js';
 import * as stripeHandlers from './handlers/stripe/stripe.js';
 
 //handlers para funções restritas por cliente (tenantID)
@@ -53,28 +53,28 @@ const routes = {
 
 
     // Manufacturers endpoints
-    'GET /api/v1/manufacturers': manufacturersHandler.getManufacturers,
-    'GET /api/v1/manufacturers/{id}': manufacturersHandler.getManufacturerById,
+    //'GET /api/v1/manufacturers': manufacturersHandler.getManufacturers,
+    //'GET /api/v1/manufacturers/{id}': manufacturersHandler.getManufacturerById,
 
     // Drones endpoints
-    'GET /api/v1/drones': dronesHandler.getDrones,
-    'GET /api/v1/drones/{id}': dronesHandler.getDroneById,
+    //'GET /api/v1/drones': dronesHandler.getDrones,
+    //'GET /api/v1/drones/{id}': dronesHandler.getDroneById,
 
     // Misc content endpoints
-    'GET /api/v1/misc': miscHandler.getMiscContent,
-    'GET /api/v1/misc/{id}': miscHandler.getMiscContentById,
+    //'GET /api/v1/misc': miscHandler.getMiscContent,
+    //'GET /api/v1/misc/{id}': miscHandler.getMiscContentById,
 
     // Agrofit produtos endpoints
-    'GET /api/v1/agrofit/produtos': produtosHandler.getProdutos,
-    'GET /api/v1/agrofit/produtos/{id}': produtosHandler.getProdutoById,
+    //'GET /api/v1/agrofit/produtos': produtosHandler.getProdutos,
+    //'GET /api/v1/agrofit/produtos/{id}': produtosHandler.getProdutoById,
 
     // Agrofit culturas endpoints
-    'GET /api/v1/agrofit/culturas': culturasHandler.getCulturas,
-    'GET /api/v1/agrofit/culturas/{id}': culturasHandler.getCulturaById,
+    //'GET /api/v1/agrofit/culturas': culturasHandler.getCulturas,
+    //'GET /api/v1/agrofit/culturas/{id}': culturasHandler.getCulturaById,
 
     // Agrofit pragas endpoints
-    'GET /api/v1/agrofit/pragas': pragasHandler.getPragas,
-    'GET /api/v1/agrofit/pragas/{id}': pragasHandler.getPragaById
+    //'GET /api/v1/agrofit/pragas': pragasHandler.getPragas,
+    //'GET /api/v1/agrofit/pragas/{id}': pragasHandler.getPragaById
 };
 
 /**
