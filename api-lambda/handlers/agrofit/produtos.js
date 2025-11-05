@@ -1,135 +1,154 @@
-const { executeQuery, getCount} = require('../../utils/database');
-const { success, serverError } = require('../../utils/response');
+import { executeQuery } from '../../utils/database.js';
+import { success, serverError, createErrorResponse, notFound } from '../../utils/response.js';
 
-async function getProdutos(event) {
+// Define constants for validation to keep the function clean and maintainable
+const ALLOWED_SORT_FIELDS = ['id', 'marca_comercial', 'titular_registro', 'createdAt', 'updatedAt'];
+const ALLOWED_FILTER_FIELDS = {
+    id_formulacao: 'p.id_formulacao',
+    id_classe_ambiental: 'p.id_classe_ambiental',
+    id_classe_toxicologica: 'p.id_classe_toxicologica',
+    id_tecnica_aplicacao: 'tap.id_tecnica_aplicacao'
+};
+
+export async function getProdutos(event) {
     try {
         const queryParams = event.queryStringParameters || {};
         const {
             limit = 50,
             offset = 0,
-            orderBy = 'produto_nome',
-            sortOrder = 'ASC',
-            search,                    // search in product name
+            q, // Search query for product names
+            sortBy = 'marca_comercial',
+            sortOrder = 'ASC'
         } = queryParams;
 
-        // Validate and sanitize parameters
-        const pagination_min = 20;
-        const pagination_max = 200;
-        const validLimit = Math.min(Math.max(parseInt(limit) || 50, pagination_min), pagination_max);
-        const validOffset = Math.max(parseInt(offset) || 0, 0);
-        const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'ASC';
+        // --- Build the Query ---
+        let baseQuery = `
+            FROM 
+                agrofit_produto p
+            LEFT JOIN agrofit_formulacao f ON p.id_formulacao = f.id
+            LEFT JOIN agrofit_classe_ambiental ca ON p.id_classe_ambiental = ca.id
+            LEFT JOIN agrofit_classe_toxicologica ct ON p.id_classe_toxicologica = ct.id
+            LEFT JOIN produto prod ON p.numero_registro = prod.id
+        `;
 
-        const mainQuery = `SELECT 
-                            p.id                            as produto_id,
-                            p.nome                          as produto_nome,
-                            p.observacao                    as produto_obs,
-                            'registrado'                    as registro_agrofit,
-                            ap.numero_registro,
-                            af.sigla                        as formulacao_sigla,
-                            af.formulacao                   as formulacao,
-                            ca.descricao                    as class_ambiental,
-                            ct.descricao                    as class_toxicologica,
-                            ap.produto_agricultura_organica as produto_organico,
-                            ap.produto_biologico            as produto_biologico,
-                            ap.inflamavel                   as produto_inflamavel,
-                            ap.corrosivo                    as produto_corrosivo,
-                            ap.url_bula                     as url_bula,
-                            ap.url_agrofit                  as url_agrofit,
-                            ap.status_prod                  as status_agrofit
-                 FROM produto p
-                          INNER JOIN produto_registrado pr ON p.id = pr.id_produto
-                          INNER JOIN agrofit_produto ap ON pr.id_produto_agrofit = ap.numero_registro
-                          LEFT JOIN agrofit_formulacao af ON af.id = ap.id_formulacao
-                          LEFT JOIN agrofit_classe_ambiental ca ON ca.id = ap.id_classe_ambiental
-                          LEFT JOIN agrofit_classe_toxicologica ct ON ct.id = ap.id_classe_toxicologica
-                WHERE
-                    ${search ? `LOWER(TRIM(p.nome)) LIKE LOWER('%${search.trim()}%')` : '1=1'}
-                ORDER BY ${orderBy} ${validSortOrder}
-                LIMIT ${validLimit} OFFSET ${validOffset};
-            `;
-        //const produtos = await executeQuery(mainQuery);
-        const condition = search ? `LOWER(TRIM(p.nome)) LIKE LOWER('%${search}.trim()}%')` : '1=1';
+        const joins = new Set(); // Use a Set to avoid duplicate joins
+        const whereClauses = [];
+        const params = [];
 
-        const [produtos, totalCount] = await Promise.all([
-            executeQuery(mainQuery),
-            getCount('produto', condition, [])
-        ]);
+        // 1. Handle Search Query ('q')
+        if (q) {
+            whereClauses.push(`(p.marca_comercial LIKE ? OR pn.nome LIKE ?)`);
+            params.push(`%${q}%`, `%${q}%`);
+        }
 
-        if (produtos.length === 0) {
-            return success({
-                data: produtos,
-                pagination: {
-                    total: 0
+        // 2. Handle ID-based Filters
+        for (const field in ALLOWED_FILTER_FIELDS) {
+            if (queryParams[field]) {
+                const dbColumn = ALLOWED_FILTER_FIELDS[field];
+
+                // Add the join for tecnica_aplicacao only if it's needed
+                if (field === 'id_tecnica_aplicacao') {
+                    joins.add('LEFT JOIN agrofit_tec_aplic_prod tap ON p.id = tap.id_produto');
                 }
-            });
-        }
 
-        // collect unique agrofit numero_registro from result
-        const productIds = produtos.map(ap => ap.numero_registro);
-
-        const categoriesQuery = `
-            SELECT
-                ap.numero_registro,
-                cat.descricao
-            FROM agrofit_produto ap
-                INNER JOIN agrofit_categ_prod cp ON ap.numero_registro = cp.numero_registro
-                INNER JOIN agrofit_categoria cat ON cp.id_categoria = cat.id
-            WHERE ap.numero_registro IN (?);
-        `;
-
-        const technologyQuery = ` 
-            SELECT
-                ap.numero_registro,
-                ta.descricao
-            FROM agrofit_produto ap
-                INNER JOIN agrofit_tec_aplic_prod tap ON ap.numero_registro = tap.numero_registro
-                INNER JOIN agrofit_tecnica_aplicacao ta ON tap.id = ta.id
-            WHERE ap.numero_registro IN (?);
-        `;
-
-        // run complementary query in paralel
-        const [categoriesRows, technologyRows] = await Promise.all([
-            executeQuery(categoriesQuery, [productIds]),
-            executeQuery(technologyQuery, [productIds]),
-        ]);
-
-        const produtosMap = new Map(produtos.map(ap => [ap.numero_registro, { ...ap, produto_categoria: [], tecnica_aplicacao: [] }]));
-
-        for (const row of categoriesRows) {
-            if (produtosMap.has(row.numero_registro)) {
-                produtosMap.get(row.numero_registro).produto_categoria.push(row.descricao);
+                whereClauses.push(`${dbColumn} = ?`);
+                params.push(queryParams[field]);
             }
         }
 
-        for (const row of technologyRows) {
-            if (produtosMap.has(row.numero_registro)) {
-                produtosMap.get(row.numero_registro).tecnica_aplicacao.push(row.descricao);
-            }
-        }
+        // 3. Construct the final WHERE clause
+        const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+        const joinClause = Array.from(joins).join(' ');
 
-        // converte map para array
-        const listaProdutos = Array.from(produtosMap.values());
+        // 4. Construct Sorting
+        const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'ASC';
+        const validSortBy = ALLOWED_SORT_FIELDS.includes(sortBy) ? `p.${sortBy}` : 'p.marca_comercial';
+        const orderClause = `ORDER BY ${validSortBy} ${validSortOrder}`;
+
+        // --- Execute Queries ---
+
+        // Query for the total count for pagination
+        const countQuery = `SELECT COUNT(DISTINCT p.id) as total ${baseQuery} ${joinClause} ${whereClause}`;
+        const countResult = await executeQuery(countQuery, params);
+        const totalCount = countResult[0].total;
+
+        // Query for the paginated data
+        const dataQuery = `
+            SELECT 
+                p.id, p.marca_comercial, p.titular_registro, p.numero_registro,
+                f.nome as formulacao,
+                ca.nome as classe_ambiental,
+                ct.nome as classe_toxicologica,
+                pn.nome as produto_normalizado_nome
+            ${baseQuery} ${joinClause} ${whereClause}
+            GROUP BY p.id
+            ${orderClause}
+            LIMIT ? OFFSET ?
+        `;
+
+        const finalParams = [...params, parseInt(limit), parseInt(offset)];
+        const result = await executeQuery(dataQuery, finalParams);
 
         return success({
-            data: listaProdutos,
+            data: result,
             pagination: {
                 total: totalCount,
-                count: produtos.length,
+                count: result.length,
                 limit: parseInt(limit),
                 offset: parseInt(offset),
-                hasMore: (parseInt(offset) + produtos.length) < totalCount,
+                hasMore: (parseInt(offset) + result.length) < totalCount,
             },
             sorting: {
-                orderBy: orderBy
+                orderBy: validSortBy,
+                sortOrder: validSortOrder
             }
         });
 
     } catch (error) {
-        console.error('GET Produtos Error:', error);
-        return serverError('Failed to fetch produtos');
+        console.error('GET Agrofit Produtos Error:', error);
+        return serverError('Failed to fetch agrofit products');
     }
 }
 
-module.exports = {
-    getProdutos
-};
+// Keep getProdutoById as it is, it's efficient for fetching a single product.
+// This function will fetch products from table produtos (byId)
+// There will also be a getProductByRegistro wich will get from agrofit
+export async function getProdutoById(event) {
+    try {
+        const id = event.routeParams?.id;
+        if (!id) {
+            return createErrorResponse(400, 'BAD_REQUEST', 'Product ID is required.');
+        }
+
+        const query = `
+            SELECT 
+                p.*,
+                f.formulacao as formulacao,
+                ca.descricao as classe_ambiental,
+                ct.descricao as classe_toxicologica,
+                prod.nome as nome_produto
+            FROM 
+                agrofit_produto p
+            LEFT JOIN agrofit_formulacao f ON p.id_formulacao = f.id
+            LEFT JOIN agrofit_classe_ambiental ca ON p.id_classe_ambiental = ca.id
+            LEFT JOIN agrofit_classe_toxicologica ct ON p.id_classe_toxicologica = ct.id
+            LEFT JOIN produto_registrado pr ON p.numero_registro = pr.id_produto_agrofit
+            LEFT JOIN produto prod ON pr.id_produto = prod.id
+            WHERE p.numero_registro = ?
+        `;
+        const [product] = await executeQuery(query, [id]);
+
+        if (!product) {
+            return notFound('Agrofit Product');
+        }
+
+        // You could add subsequent queries here to fetch related "many-to-many" data
+        // like tecnicas_aplicacao, culturas, pragas etc. and append them to the response.
+
+        return success({ data: product });
+
+    } catch (error) {
+        console.error('GET Agrofit Produto By ID Error:', error);
+        return serverError('Failed to fetch agrofit product');
+    }
+}

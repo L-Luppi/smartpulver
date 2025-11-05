@@ -1,6 +1,6 @@
 import {getAll, getById, insert, updateById, getCount, executeQuery} from '../../utils/database.js';
 import {success, notFound, serverError} from '../../utils/response.js';
-import {getStripeProduct, updateProduct, updatePrice, createPrice, singleShotCreate} from '../stripe/stripe.js';
+import {updateProduct, updatePrice, createPrice, singleShotCreate} from '../stripe/stripe.js';
 
 import {
     validateRequiredFields,
@@ -13,7 +13,8 @@ const REQUIRED_FIELDS = ['nome', 'display_name', 'isPaymentActive', 'valor_atual
 const UNIQUE_FIELDS = ['nome', 'display_name'];
 const ALLOWED_UPDATE_FIELDS = ['nome', 'display_name', 'descricao',
     'duracao_dias', 'valor_atual', 'isPaymentActive', 'paymentInterval',
-    'paymentInterval_count', 'paymentCurrency', 'status'];
+    'paymentInterval_count', 'paymentCurrency', 'status', 'obs'];
+const ALLOWED_SORT_FIELDS = ['id', 'nome', 'display_name'];
 const VALID_STATUS = ['ativo', 'inativo', 'cancelado', 'promo', 'suspenso'];
 const SUSPEND_PAYMENT = ['inativo', 'cancelado', 'suspenso'];
 
@@ -25,7 +26,8 @@ async function _createStripeProductAndUpdatePlano(plano) {
             description: plano.descricao,
             metadata: {
                 internal_id: plano.id,
-                display_name: plano.display_name
+                display_name: plano.display_name,
+                origem: plano.origem,
             },
             default_price_data: {
                 unit_amount: Math.round(plano.valor_atual * 100),
@@ -69,7 +71,6 @@ export async function getPlanos(event) {
             limit = 50,
             offset = 0,
             status,
-            orderBy = 'display_name',
             sortBy = 'display_name',
             sortOrder = 'ASC'
         } = queryParams;
@@ -78,23 +79,18 @@ export async function getPlanos(event) {
         const params = [];
 
         if (status !== undefined) {
-            if (VALID_STATUS.includes(status.toLowerCase())) {
-                condition = 'status = ?';
-                params.push(status.toLowerCase());
-            } else {
-                return serverError('Invalid Status', 400);
+            if (!validateFieldValues(status.toLowerCase(), VALID_STATUS)) {
+                return createErrorResponse(400, 'INVALID_PARAMETER',
+                    'Invalid status value. Valid options: ' + VALID_STATUS.join(', '));
             }
+            condition = 'status = ?';
+            params.push(status.toLowerCase());
         }
 
-        let orderClause = orderBy;
-        if (sortBy) {
-            const allowedSortFields = ['id', 'nome', 'display_name', 'valor_atual', 'updatedAt', 'createdAt'];
-            const allowedSortOrder = ['ASC', 'DESC'];
-
-            if (allowedSortFields.includes(sortBy) && allowedSortOrder.includes(sortOrder.toUpperCase())) {
-                orderClause = `${sortBy} ${sortOrder.toUpperCase()}`;
-            }
-        }
+        // Centralized and safe sorting logic
+        const validSortBy = ALLOWED_SORT_FIELDS.includes(sortBy) ? sortBy : 'display_name';
+        const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'ASC';
+        const orderClause = `${validSortBy} ${validSortOrder}`;
 
         const [result, totalCount] = await Promise.all([
             getAll('plano', condition, params, parseInt(limit), parseInt(offset), orderClause),
@@ -111,7 +107,8 @@ export async function getPlanos(event) {
                 hasMore: (parseInt(offset) + result.length) < totalCount,
             },
             sorting: {
-                orderBy: orderClause
+                orderBy: validSortBy,
+                sortOrder: validSortOrder
             }
         });
     } catch (error) {
@@ -161,6 +158,7 @@ export async function createPlano(event) {
         const enrichedData = {
             ...data,
             status: data.status ? data.status.trim().toLowerCase() : 'ativo',
+            origem: 'local',
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -221,100 +219,82 @@ export async function updatePlano(event) {
             }
         }
 
-        if (cleanData.status !== undefined) {
+
+
+        if (cleanData.status) {
             cleanData.status = cleanData.status.trim().toLowerCase();
-            if (!validateFieldValues(cleanData.status, VALID_STATUS)) {
-                return serverError('Invalid status.  Valid options: ' + VALID_STATUS.join(', '), 400);
+            if (!VALID_STATUS.includes(cleanData.status)) {
+                return serverError('Invalid status. Valid options: ' + VALID_STATUS.join(', '), 400);
             }
+            // Use the SUSPEND_PAYMENT array to drive the logic
             if (SUSPEND_PAYMENT.includes(cleanData.status)) {
                 cleanData.isPaymentActive = 0;
             }
         }
-        const enrichedData = {...cleanData, updatedAt: Date.now()};
-        let updatedPlano = await updateById('plano', id, enrichedData, 'id');
 
-        if (updatedPlano) {
-            const paymentId = updatedPlano.payment_id;
-            const priceId = updatedPlano.price_id;
+        const dataForDB = { ...currentPlano, ...cleanData, updatedAt: Date.now() };
 
-            if (!paymentId && updatedPlano.isPaymentActive) {
-                const integration = await _createStripeProductAndUpdatePlano(updatedPlano);
-                if (integration.success) {
-                    return success({data: integration.data, message: 'Plano Atualizado e integrado no Stripe...'}, 200);
-                } else {
-                    return success({
-                        data: integration.data,
-                        message: 'Plano Atualizado na aplicação mas falhou ao integrar com Stripe'
-                    }, 200);
-                }
-            }
-
-            if (paymentId) {
-                const currentStripeData = await getStripeProduct(paymentId);
-
-                if (!currentStripeData) {
-                    console.log(`Produto Stripe com ID ${paymentId} não encontrado. Tentando recriar...`);
-                    if (updatedPlano.isPaymentActive) {
-                        const integration = await _createStripeProductAndUpdatePlano(updatedPlano);
-                        if (integration.success) {
-                            return success({
-                                data: integration.data,
-                                message: 'Plano Atualizado e integração com Stripe recriada.'
-                            }, 200);
-                        } else {
-                            return serverError('Produto não encontrado no Stripe. Falha ao recriar a integração. O plano foi desativado para pagamentos.', 500);
-                        }
-                    }
-                } else {
-                    const stripePayload = {};
-                    if (updatedPlano.nome && currentStripeData.name !== updatedPlano.nome) stripePayload.name = updatedPlano.nome;
-                    if (updatedPlano.descricao !== undefined && currentStripeData.description !== updatedPlano.descricao) stripePayload.description = updatedPlano.descricao;
-                    if (updatedPlano.display_name !== undefined && currentStripeData.metadata?.display_name !== updatedPlano.display_name) stripePayload.metadata = {
-                        ...currentStripeData.metadata,
-                        display_name: updatedPlano.display_name
-                    };
-
-                    const isActive = ['ativo', 'promo'].includes(updatedPlano.status.toLowerCase());
-                    const effectiveIsActive = isActive && updatedPlano.isPaymentActive === 1;
-                    if (currentStripeData.active !== effectiveIsActive) {
-                        stripePayload.active = effectiveIsActive;
-                    }
-
-                    if (Object.keys(stripePayload).length > 0) {
-                        console.log(`[STRIPE] Updating product ${paymentId} with payload: `, stripePayload);
-                        await updateProduct(paymentId, stripePayload);
-                    }
-
-                    const priceChanged = (currentPlano.valor_atual !== updatedPlano.valor_atual) ||
-                        (currentPlano.paymentInterval !== updatedPlano.paymentInterval) ||
-                        (currentPlano.paymentInterval_count !== updatedPlano.paymentInterval_count) ||
-                        (currentPlano.paymentCurrency !== updatedPlano.paymentCurrency);
-
-                    if (priceChanged && effectiveIsActive) {
-                        const newPricePayload = {
-                            unit_amount: Math.round(updatedPlano.valor_atual * 100),
-                            currency: updatedPlano.paymentCurrency,
-                            recurring: {
-                                interval: updatedPlano.paymentInterval,
-                                interval_count: updatedPlano.paymentInterval_count,
-                            },
-                            product: paymentId
-                        };
-                        if (priceId) await updatePrice(priceId, {active: false});
-                        const newPrice = await createPrice(newPricePayload);
-                        updatedPlano = await updateById('plano', id, {
-                            price_id: newPrice.id,
-                            updatedAt: Date.now()
-                        }, 'id');
-                    }
-                }
-            }
-
-            return success({
-                data: updatedPlano,
-                message: 'Plano Atualizado!'
-            });
+        if (!dataForDB.payment_id && dataForDB.isPaymentActive) {
+             console.log(`\u2699\uFE0F Activating and syncing local plano ${id} with Stripe for the first time...`);
+             const integration = await _createStripeProductAndUpdatePlano(dataForDB);
+             return success({
+                 data: integration.data,
+                 message: integration.success ? 'Plano ativado e sincronizado com Stripe!' : 'Plano ativado, mas falhou ao sincronizar com Stripe.'
+             }, 200);
         }
+
+        if (dataForDB.payment_id) {
+            const stripeProductId = dataForDB.payment_id;
+            const oldPriceId = currentPlano.price_id;
+
+            const effectiveIsActive = dataForDB.isPaymentActive === 1;
+
+            const priceChanged = cleanData.valor_atual && (currentPlano.valor_atual !== cleanData.valor_atual);
+            if (priceChanged && effectiveIsActive) {
+                console.log(`\u2699\uFE0F Price changed for plano ${id}. Updating Stripe...`);
+                const newPrice = await createPrice({
+                    product: stripeProductId,
+                    unit_amount: Math.round(dataForDB.valor_atual * 100),
+                    currency: dataForDB.paymentCurrency || 'brl',
+                    recurring: {
+                        interval: dataForDB.paymentInterval || 'month',
+                        interval_count: dataForDB.paymentInterval_count || 1,
+                    },
+                });
+                console.log(`\u2705 New Stripe price ${newPrice.id} created.`);
+
+                await updateProduct(stripeProductId, {default_price: newPrice.id});
+                console.log(`\u2705 Product ${stripeProductId} updated with new default price.`);
+
+                if (currentPlano.price_id) {
+                    await updatePrice(oldPriceId, {active: false});
+                    console.log(`\u2705 Old price ${oldPriceId} deactivated.`);
+                }
+                dataForDB.price_id = newPrice.id;
+            }
+
+            const productPayload = {};
+            if (cleanData.nome && currentPlano.nome !== cleanData.nome) productPayload.name = cleanData.nome;
+            if (cleanData.descricao && currentPlano.descricao !== cleanData.descricao) productPayload.description = cleanData.descricao;
+            if (cleanData.display_name && currentPlano.display_name !== cleanData.display_name) {
+                productPayload.metadata = {...productPayload.metadata, display_name: cleanData.display_name};
+            }
+            productPayload.active = dataForDB.isPaymentActive === 1;
+
+            if (Object.keys(productPayload).length > 0) {
+                console.log(`\u2699\uFE0F Syncing metadata changes to Stripe product ${stripeProductId}...`);
+                await updateProduct(stripeProductId, productPayload);
+                console.log(`\u2705 Stripe product metadata updated.`);
+            }
+        }
+
+        const finalUpdatedPlano = await updateById('plano', id, dataForDB);
+
+        return success({
+            data: finalUpdatedPlano,
+            message: 'Plano Atualizado!'
+        })
+
     } catch (error) {
         console.error('UPDATE Plano Error:', error);
         return serverError('Failed to update Plano');

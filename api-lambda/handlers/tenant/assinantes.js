@@ -1,7 +1,7 @@
 import {getAll, getById, insert, updateById, getCount, executeQuery} from '../../utils/database.js';
 import {success, notFound, serverError } from '../../utils/response.js';
 import {getLocationData, extractCityCode} from '../../utils/locationService.js';
-import {validateRequiredFields, createErrorResponse, validateFieldValues, filterAllowedFields} from '../../utils/dataValidation.js';
+import {validateRequiredFields, createErrorResponse, filterAllowedFields} from '../../utils/dataValidation.js';
 
 const REQUIRED_FIELDS = ['nome', 'username', 'email', 'fone', 'cognito_sub'];
 const UNIQUE_FIELDS = ['email', 'cpf_cnpj', 'fone', 'cognito_sub'];
@@ -23,21 +23,20 @@ export async function getAssinantes(event) {
 
         let condition = '';
         const params = [];
-        const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'ASC';
+        //const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'ASC';
 
-        if (status !== undefined) {
-            if (validateFieldValues(status.trim().toLowerCase(), VALID_STATUS)) {
+        if (status) {
+            if (VALID_STATUS.includes(status.toLowerCase())) {
                 condition = 'status = ?';
-                params.push(status.trim().toLowerCase());
+                params.push(status.toLowerCase());
             } else {
                 return createErrorResponse(400, 'INVALID_PARAMETER', 'Invalid status.  Valid options: ' + VALID_STATUS.join(', '));
             }
         }
 
-        let orderClause = 'nome ASC';
-        if (validateFieldValues(sortBy.trim().toLowerCase(sortBy), ALLOWED_SORT_FIELDS)) {
-            orderClause = `${sortBy} ${validSortOrder}`;
-        }
+        const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'ASC';
+        const validSortBy = ALLOWED_SORT_FIELDS.includes(sortBy) ? sortBy : 'nome';
+        const orderClause = `${validSortBy} ${validSortOrder}`;
 
         const [result, totalCount] = await Promise.all([
             getAll('assinante', condition, params, parseInt(limit), parseInt(offset), orderClause),
@@ -152,7 +151,7 @@ export async function updateAssinante(event) {
         }
 
         for (const field of UNIQUE_FIELDS) {
-            if (cleanData[field]) {
+            if (cleanData[field] && cleanData[field] !== currentSubscriber[field]) {
                 const query = `SELECT id FROM assinante WHERE ${field} = ? AND id <> ?`;
                 const [existing] = await executeQuery(query, [cleanData[field], id]);
                 if (existing) {
@@ -166,8 +165,8 @@ export async function updateAssinante(event) {
 
         if (cleanData.status !== undefined) {
             cleanData.status = cleanData.status.trim().toLowerCase();
-            if (!validateFieldValues(cleanData.status, VALID_STATUS)) {
-                return serverError('Invalid status.  Valid options: ' + VALID_STATUS.join(', '), 400);
+            if (!VALID_STATUS.includes(cleanData.status)) {
+                return createErrorResponse(400, 'INVALID_PARAMETER', 'Invalid status.  Valid options: ' + VALID_STATUS.join(', '));
             }
         }
 
@@ -202,8 +201,8 @@ export async function updateAssinante(event) {
             }
         }
 
-        const enrichedData = {...cleanData, updatedAt: Date.now()}
-        const updatedAssinante = await updateById('assinante', id, enrichedData, 'id');
+        const dataForDB = { ...currentSubscriber, ...cleanData, updatedAt: Date.now() }
+        const updatedAssinante = await updateById('assinante', id, dataForDB, 'id');
 
         return success({
             data: updatedAssinante,

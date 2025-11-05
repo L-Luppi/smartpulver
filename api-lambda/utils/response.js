@@ -15,6 +15,36 @@ export const corsHeaders = {
  * @param {Object} additionalHeaders - Additional headers
  * @returns {Object} Lambda response object
  */
+
+/**
+ * Define constantes de emojis Unicode ou símbolos textuais
+ * para padronizar mensagens de console.
+ */
+
+// Símbolos Unicode
+export const SUCESSO = '✅';    // Checkmark/Visto
+export const ERRO = '❌';       // X
+export const ALERTA = '⚠️';     // Atenção/Warning
+export const INFO = 'ℹ️';      // Informação
+//export const CARREGANDO = '⏳'; // Ampulheta/Tempo
+
+// Você também pode definir funções de log padronizadas aqui
+export function logSucesso(mensagem) {
+    console.log(`${SUCESSO} SUCESSO: ${mensagem}`);
+}
+
+export function logErro(mensagem) {
+    console.error(`${ERRO} ERRO: ${mensagem}`);
+}
+
+export function logAlerta(mensagem) {
+    console.warn(`${ALERTA} ALERTA: ${mensagem}`);
+}
+
+export function logInfo(mensagem) {
+    console.info(`${INFO} INFO: ${mensagem}`);
+}
+
 export function success(data, statusCode = 200, additionalHeaders = {}) {
     const response = {
         success: true,

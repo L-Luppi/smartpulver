@@ -1,6 +1,12 @@
 import { getAll, getById, insert, updateById, getCount, executeQuery } from '../../utils/database.js';
 import { success, notFound, serverError, createErrorResponse } from '../../utils/response.js';
 import { createStripeCustomer, createStripeSubscription } from '../stripe/stripe.js';
+import {filterAllowedFields} from "../../utils/dataValidation.js";
+
+const ALLOWED_SORT_FIELDS = ['id', 'id_assinante', 'id_plano', 'stripe_status', 'createdAt', 'updatedAt'];
+const ALLOWED_UPDATE_FIELDS = ['id_plano', 'id_assinante', 'current_period_end', 'renova_automatico', 'valor_pago', 'stripe_status'];
+const VALID_STRIPE_STATUS = ['active', 'canceled', 'incomplete', 'past_due', 'unpaid', 'trialing']; // Common Stripe subscription statuses
+
 
 export async function getAssinaturas(event) {
     try {
@@ -9,7 +15,9 @@ export async function getAssinaturas(event) {
             offset = 0,
             id_assinante,
             id_plano,
-            status
+            stripe_status,
+            sortBy = 'createdAt',
+            sortOrder = 'DESC'
         } = queryParams;
 
         // Build condition for simple filtering on assinaturas table
@@ -27,18 +35,28 @@ export async function getAssinaturas(event) {
             params.push(id_plano);
         }
 
-        if (status) {
-            conditions.push('status = ?');
-            params.push(status);
+        if (stripe_status) {
+            if(VALID_STRIPE_STATUS.includes(stripe_status.toLowerCase())) {
+                conditions.push('status = ?');
+                params.push(stripe_status.toLowerCase());
+            } else {
+                return createErrorResponse(400, 'INVALID_PARAMETER', 'Invalid status.  Valid options: ' + VALID_STRIPE_STATUS.join(', '));
+            }
         }
 
         if (conditions.length > 0) {
             condition = conditions.join(' AND ');
         }
 
-        // Get basic subscription data using standard getAll
-        const result = await getAll('assinatura', condition, params, parseInt(limit), parseInt(offset), 'createdAt DESC');
-        const totalCount = await getCount('assinatura', condition, params);
+        // Consistent sorting validation
+        const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+        const validSortBy = ALLOWED_SORT_FIELDS.includes(sortBy) ? sortBy : 'createdAt';
+        const orderClause = `${validSortBy} ${validSortOrder}`;
+
+        const [result, totalCount] = await Promise.all([
+            getAll('assinatura', condition, params, parseInt(limit), parseInt(offset), orderClause),
+            getCount('assinatura', condition, params)
+        ]);
 
         return success({
             data: result,
@@ -50,14 +68,12 @@ export async function getAssinaturas(event) {
                 hasMore: (parseInt(offset) + result.length) < totalCount
             }
         });
-
     } catch (error) {
         console.error('GET Subscriptions Error:', error);
         return serverError('Failed to fetch subscriptions');
     }
 }
 
-// GET /api/v1/smart/subscriptions/{id} - Enhanced with JOIN data
 export async function getAssinaturaById(event) {
     try {
         const id = event.pathParameters?.id;
@@ -188,7 +204,6 @@ export async function createAssinatura(event) {
     }
 }
 
-// PUT /api/v1/smart/subscriptions/{id}
 export async function updateAssinatura(event) {
     try {
         console.log('UPDATE Subscription - Event:', JSON.stringify(event, null, 2));
@@ -198,30 +213,35 @@ export async function updateAssinatura(event) {
             return serverError('ID parameter is required', 400);
         }
 
+        // Fetch the current record to merge updates safely
+        const currentAssinatura = await getById('assinatura', id);
+        if (!currentAssinatura) {
+            return createErrorResponse(404, 'NOT_FOUND', 'Assinatura not found', { id: parseInt(id) });
+        }
+
         const body = JSON.parse(event.body || '{}');
+        const cleanData = filterAllowedFields(body, ALLOWED_UPDATE_FIELDS);
 
-        // Prepare data
-        const allowedFields = ['id_plano', 'id_assinante', 'current_period_end', 'renova_automatico', 'valor_pago','stripe_status'];
-        const data = {};
+        if (Object.keys(cleanData).length === 0) {
+            return createErrorResponse(400, 'BAD_REQUEST', 'No valid fields to update');
+        }
 
-        allowedFields.forEach(field => {
-            if (body[field] !== undefined) {
-                data[field] = body[field];
+        // Validate and normalize stripe_status if provided
+        if (cleanData.stripe_status) {
+            cleanData.stripe_status = cleanData.stripe_status.trim().toLowerCase();
+            if (!VALID_STRIPE_STATUS.includes(cleanData.stripe_status)) {
+                return createErrorResponse(400, 'INVALID_PARAMETER', 'Invalid stripe_status. Valid options: ' + VALID_STRIPE_STATUS.join(', '));
             }
-        });
-
-        if (Object.keys(data).length === 0) {
-            return serverError('No valid fields to update', 400);
         }
+        // Use the safe and robust update pattern: merge current data with new data
+        const dataForDB = { ...currentAssinatura, ...cleanData, updatedAt: Date.now() };
+        const updatedAssinatura = await updateById('assinatura', id, dataForDB);
 
-        const result = await updateById('assinatura', id, data);
-
-        if (!result) {
-            return notFound('Assinatura not found');
-        }
+        // TODO: Consider if local updates to stripe_status or renova_automatico should trigger Stripe API calls.
+        // For now, we assume Stripe webhooks are the primary way these fields are updated.
 
         return success({
-            data: result,
+            data: updatedAssinatura,
             message: 'Assinatura updated successfully'
         });
 
