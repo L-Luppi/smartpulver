@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
 import { Box, CircularProgress, Typography, Button } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginCallback() {
   const auth = useAuth();
