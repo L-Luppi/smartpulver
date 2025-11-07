@@ -1,23 +1,26 @@
 import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, CircularProgress, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginCallback() {
   const auth = useAuth();
   const navigate = useNavigate();
 
-  // 👇 Redireciona assim que a autenticação for concluída
-  useEffect(() => {
-    if (auth.isAuthenticated) {
-      // Se quiser, pode salvar o token aqui, por exemplo:
-      // localStorage.setItem("access_token", auth.user?.access_token);
-      navigate("/app"); // redireciona
-    }
-  }, [auth.isAuthenticated, navigate]);
+  // 🔹 Lida com sucesso de login
+useEffect(() => {
+  if (auth.isAuthenticated && auth.user) {
+    const { access_token, id_token } = auth.user;
+    if (access_token) localStorage.setItem("access_token", access_token);
+    if (id_token) localStorage.setItem("id_token", id_token);
 
-  // Enquanto está carregando o callback (usuário retornando do Cognito)
-  if (auth.isLoading && !auth.isAuthenticated) {
+    navigate("/app", { replace: true });
+  }
+}, [auth.isAuthenticated, auth.user, navigate]);
+
+
+  // 🔹 Mostra loading enquanto o callback está processando
+  if (auth.isLoading) {
     return (
       <Box
         sx={{
@@ -37,22 +40,39 @@ export default function LoginCallback() {
     );
   }
 
-  // Se houve erro no processo
+  // 🔹 Trata erros de forma mais clara e amigável
   if (auth.error) {
+    console.error("[LoginCallback] Erro no login:", auth.error);
     return (
-      <div className="flex flex-col items-center justify-center h-screen text-center">
-        <p className="mb-4 text-red-600">Erro: {auth.error.message}</p>
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          gap: 2,
+          textAlign: "center",
+        }}
+      >
+        <Typography variant="h6" color="error">
+          Falha na autenticação
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {auth.error.message || "Tente novamente em instantes."}
+        </Typography>
+        <Button
+          variant="contained"
           onClick={() => auth.signinRedirect()}
+          sx={{ mt: 2 }}
         >
           Tentar novamente
-        </button>
-      </div>
+        </Button>
+      </Box>
     );
   }
 
-  // Exibe algo rápido enquanto finaliza o fluxo
+  // 🔹 Estado final de fallback — caso algo estranho aconteça
   return (
     <Box
       sx={{
