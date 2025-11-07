@@ -1,10 +1,26 @@
 import Stripe from 'stripe';
 import {executeQuery, getById, updateById, insert} from '../../utils/database.js';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 import {success, serverError, logInfo, logAlerta} from '../../utils/response.js';
+
+// 1. Declare the variable but do not initialize it.
+let stripe;
+
+/**
+ *  Lazily initialize and returns the Stripe instance.
+ *  @returns {Stripe} The Stripe instance.
+ */
+function getStripe() {
+    if(!stripe) {
+        if (!process.env.STRIPE_SECRET_KEY) {
+            throw new Error('Stripe secret key is not configured in environment variables.');
+        }
+        stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    }
+}
 
 // #region Product and Price Functions
 export async function singleShotCreate(produto) {
+    const stripe = getStripe(); // Get instance
     try {
         const stripeProd = await stripe.products.create({
             name: produto.name,
@@ -30,10 +46,12 @@ export async function singleShotCreate(produto) {
 }
 
 export async function updateProduct(prodId, payload) {
+    const stripe = getStripe(); // Get instance
     return await stripe.products.update(prodId, payload);
 }
 
 export async function createPrice(priceData) {
+    const stripe = getStripe(); // Get instance
     return await stripe.prices.create({
         product: priceData.product,
         unit_amount: priceData.unit_amount,
@@ -46,10 +64,12 @@ export async function createPrice(priceData) {
 }
 
 export async function updatePrice(priceId, payload){
+    const stripe = getStripe(); // Get instance
     return await stripe.prices.update(priceId, payload);
 }
 
 export async function getStripeProduct(id) {
+    const stripe = getStripe(); // Get instance
     try {
         return await stripe.products.retrieve(id, { expand: ['default_price'], });
     } catch (error) {
@@ -65,6 +85,7 @@ export async function getStripeProduct(id) {
 
 // #region Customer and Subscription Functions
 export async function createStripeCustomer(assinante) {
+    const stripe = getStripe(); // Get instance
     return stripe.customers.create({
         name: assinante.nome,
         email: assinante.email,
@@ -76,6 +97,7 @@ export async function createStripeCustomer(assinante) {
 }
 
 export async function createStripeSubscription(customerId, priceId) {
+    const stripe = getStripe(); // Get instance
     return stripe.subscriptions.create({
         customer: customerId,
         items: [{price: priceId}],
@@ -89,6 +111,7 @@ export async function createStripeSubscription(customerId, priceId) {
 // #region Webhook Handlers
 
 async function handleCustomerEvents(stripeEvent) {
+    //const stripe = getStripe(); // Get instance
     const eventType = stripeEvent.type;
     const dataObject = stripeEvent.data.object;
 
@@ -130,6 +153,7 @@ async function handleCustomerEvents(stripeEvent) {
 }
 
 async function handleInvoiceEvents(stripeEvent) {
+    const stripe = getStripe(); // Get instance
     const eventType = stripeEvent.type;
     const invoice = stripeEvent.data.object;
 
@@ -168,10 +192,12 @@ async function handleInvoiceEvents(stripeEvent) {
 }
 
 async function handlePaymentEvents(stripeEvent) {
+    //const stripe = getStripe(); // Get instance
     logInfo(`[Stripe Webhook] Informational payment event: ${stripeEvent.type}`);
 }
 
 async function handleProductEvents(stripeEvent) {
+    //const stripe = getStripe(); // Get instance
     // when a product is created directly in Stripe dashboard multiple events are fired
 
     // console.log('[stripe event para product/price \n', stripeEvent);
@@ -218,6 +244,7 @@ async function handleProductEvents(stripeEvent) {
 }
 
 export async function webhook(event) {
+    const stripe = getStripe(); // Get instance
     // 1. SECURELY PARSE THE EVENT
     const sig = event.headers['stripe-signature'] || event.headers['Stripe-Signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;

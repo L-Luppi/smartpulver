@@ -1,5 +1,7 @@
 import { corsResponse, serverError, notFound } from './utils/response.js';
 
+import { handlePostConfirmation } from './utils/cognitoHandler.js';
+
 // Import all handler modules
 //import * as manufacturersHandler from './handlers/manufacturers.js';
 //import * as dronesHandler from './handlers/drones.js';
@@ -136,6 +138,20 @@ function matchRoute(method, proxy) {
  * @returns {Promise<Object>} HTTP response object
  */
 export const handler = async (event) => {
+    console.log('--- Lambda Invocation ---');
+    console.log('Event Source:', JSON.stringify(event, null, 2));
+
+    // 1. Check if this is a Cognito PostConfirmation trigger event
+    if (event.triggerSource === 'PostConfirmation_ConfirmSignUp') {
+        console.log('✅ Detected Cognito PostConfirmation event. Routing to cognitoHandler...');
+        return await handlePostConfirmation(event);
+    }
+
+    // 2. If not a Cognito trigger, assume it's an API Gateway HTTP request
+    console.log('➡️ Detected API Gateway request. Routing to apiGatewayHandler...');
+    //return await handleApiGatewayRequest(event);
+
+    // 2. API GATEWAY LOGIC
     const pathForRouting = event.path || (event.pathParameters?.proxy || '');
     const method = event.httpMethod;
 

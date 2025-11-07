@@ -2,6 +2,7 @@ import {getAll, getById, insert, updateById, getCount, executeQuery} from '../..
 import {success, notFound, serverError } from '../../utils/response.js';
 import {getLocationData, extractCityCode} from '../../utils/locationService.js';
 import {validateRequiredFields, createErrorResponse, filterAllowedFields} from '../../utils/dataValidation.js';
+//import AWS from 'aws-sdk';
 
 const REQUIRED_FIELDS = ['nome', 'username', 'email', 'fone', 'cognito_sub'];
 const UNIQUE_FIELDS = ['email', 'cpf_cnpj', 'fone', 'cognito_sub'];
@@ -9,6 +10,9 @@ const ALLOWED_SORT_FIELDS = ['id', 'nome', 'username'];
 const ALLOWED_UPDATE_FIELDS = ['nome','username', 'email', 'validade_plano', 'fone', 'cep', 'cpf_cnpj',
     'id_cidade_ibge', 'endereco','numero','bairro','complemento','status','cognito_sub'];
 const VALID_STATUS = ['ativo', 'inativo', 'cancelado', 'suspenso', 'registrado'];
+//const cognito = new AWS.CognitoIdentityServiceProvider();
+
+
 
 export async function getAssinantes(event) {
     try {
