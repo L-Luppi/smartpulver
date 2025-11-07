@@ -1,54 +1,23 @@
-import { useAuth } from "react-oidc-context";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "react-oidc-context";
 import { Box, CircularProgress, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginCallback() {
   const auth = useAuth();
   const navigate = useNavigate();
 
+  // 👇 Redireciona assim que a autenticação for concluída
   useEffect(() => {
-    const checkSubscription = async () => {
-      if (!auth.isAuthenticated) return;
+    if (auth.isAuthenticated) {
+      // Se quiser, pode salvar o token aqui, por exemplo:
+      // localStorage.setItem("access_token", auth.user?.access_token);
+      navigate("/app"); // redireciona
+    }
+  }, [auth.isAuthenticated, navigate]);
 
-      const idToken = auth.user?.id_token;
-
-      try {
-        const res = await fetch("https://0y96x2o50j.execute-api.sa-east-1.amazonaws.com/prod/api/v1/smart/plans", {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-        console.log(res)
-        if (!res.ok) {
-          throw new Error("Erro ao buscar planos");
-        }
-
-        const data = await res.json();
-
-        // Exemplo: verificando se o usuário tem algum plano ativo
-        const hasActiveSubscription = data?.data?.some(
-          (plano: any) => plano.status === "ativo"
-        );
-
-        if (hasActiveSubscription) {
-          navigate("/dashboard");
-        } else {
-          // window.location.href =
-          //   "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
-        }
-      } catch (err) {
-        console.error("Erro ao verificar assinatura:", err);
-        // window.location.href =
-        //   "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
-      }
-    };
-
-    checkSubscription();
-  }, [auth, navigate]);
-
-  if (auth.isLoading) {
+  // Enquanto está carregando o callback (usuário retornando do Cognito)
+  if (auth.isLoading && !auth.isAuthenticated) {
     return (
       <Box
         sx={{
@@ -68,6 +37,7 @@ export default function LoginCallback() {
     );
   }
 
+  // Se houve erro no processo
   if (auth.error) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center">
@@ -82,6 +52,7 @@ export default function LoginCallback() {
     );
   }
 
+  // Exibe algo rápido enquanto finaliza o fluxo
   return (
     <Box
       sx={{
