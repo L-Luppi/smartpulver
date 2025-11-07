@@ -6,7 +6,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 export default function LoginCallback() {
   const auth = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   // 🔹 Captura a rota anterior antes do login (caso tenha sido salva)
   const from = sessionStorage.getItem("redirect_after_login") || "/app";
