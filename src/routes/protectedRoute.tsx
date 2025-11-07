@@ -1,5 +1,5 @@
 import { useAuth } from "react-oidc-context";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 import { CircularProgress, Box } from "@mui/material";
 
 interface ProtectedRouteProps {
