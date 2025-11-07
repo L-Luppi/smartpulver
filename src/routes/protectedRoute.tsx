@@ -22,24 +22,34 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
         try {
           const idToken = auth.user?.id_token;
 
-          const res = await fetch("/me/subscription", {
-            headers: { Authorization: `Bearer ${idToken}` },
+          const res = await fetch("/api/v1/smart/plans", {
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+              "Content-Type": "application/json",
+            },
           });
+
+          if (!res.ok) throw new Error("Erro ao buscar planos");
 
           const data = await res.json();
 
-          if (!data.hasActiveSubscription) {
-            // 🔹 logado mas sem assinatura → manda pro Stripe
-            window.location.href =
-              "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
+          // 🔹 checa se tem algum plano ativo
+          const hasActiveSubscription = data?.data?.some(
+            (plano: any) => plano.status === "ativo"
+          );
+
+          if (!hasActiveSubscription) {
+            // 🔹 logado mas sem assinatura → manda pro Stripe checkout
+            // window.location.href =
+            //   "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
           } else {
-            setCheckingSub(false); // tudo ok, libera rota
+            setCheckingSub(false); // tudo ok → libera rota
           }
         } catch (err) {
           console.error("Erro ao verificar assinatura", err);
           // fallback → também manda pro checkout
-          window.location.href =
-            "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
+          // window.location.href =
+          //   "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
         }
       }
     };

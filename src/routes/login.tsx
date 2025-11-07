@@ -14,21 +14,34 @@ export default function LoginCallback() {
       const idToken = auth.user?.id_token;
 
       try {
-        const res = await fetch("/stripe/webhook", {
-          headers: { Authorization: `Bearer ${idToken}` },
+        const res = await fetch("https://0y96x2o50j.execute-api.sa-east-1.amazonaws.com/prod/api/v1/smart/plans", {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
         });
+        console.log(res)
+        if (!res.ok) {
+          throw new Error("Erro ao buscar planos");
+        }
 
         const data = await res.json();
 
-        if (data.hasActiveSubscription) {
+        // Exemplo: verificando se o usuário tem algum plano ativo
+        const hasActiveSubscription = data?.data?.some(
+          (plano: any) => plano.status === "ativo"
+        );
+
+        if (hasActiveSubscription) {
           navigate("/dashboard");
         } else {
-          window.location.href =
-            "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
+          // window.location.href =
+          //   "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
         }
       } catch (err) {
-        window.location.href =
-          "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
+        console.error("Erro ao verificar assinatura:", err);
+        // window.location.href =
+        //   "https://buy.stripe.com/test_4gM8wI2l7gpZ8cs7vP9IQ00";
       }
     };
 

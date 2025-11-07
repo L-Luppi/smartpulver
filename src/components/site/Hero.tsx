@@ -49,15 +49,6 @@ export default function Hero() {
             <Button sx={{ color: "#fff" }}>Planos</Button>
             <Button sx={{ color: "#fff" }}>Contato</Button>
             <Button
-              sx={{ color: "#fff" }}
-              onClick={() => {
-                const signupUrl = import.meta.env.VITE_COGNITO_SIGNUP_URL;
-                window.location.href = signupUrl;
-              }}
-            >
-              Cadastro
-            </Button>
-            <Button
               variant="contained"
               sx={{
                 backgroundColor: "#FF9800",
@@ -95,15 +86,6 @@ export default function Hero() {
               </ListItemButton>
             ))}
             <ListItem>
-              <Button
-                sx={{ color: "#fff" }}
-                onClick={() => {
-                  const signupUrl = import.meta.env.VITE_COGNITO_SIGNUP_URL;
-                  window.location.href = signupUrl;
-                }}
-              >
-                Cadastro
-              </Button>
               <Button
                 fullWidth
                 sx={{
