@@ -7,20 +7,16 @@ export default function LoginCallback() {
   const auth = useAuth();
   const navigate = useNavigate();
 
-  // 🔹 Captura a rota anterior antes do login (caso tenha sido salva)
-  const from = sessionStorage.getItem("redirect_after_login") || "/app";
-
   // 🔹 Lida com sucesso de login
- useEffect(() => {
+useEffect(() => {
   if (auth.isAuthenticated && auth.user) {
     const { access_token, id_token } = auth.user;
     if (access_token) localStorage.setItem("access_token", access_token);
     if (id_token) localStorage.setItem("id_token", id_token);
 
-    sessionStorage.removeItem("redirect_after_login");
-    navigate(from, { replace: true });
+    navigate("/app", { replace: true });
   }
-}, [auth.isAuthenticated, auth.user, navigate, from]);
+}, [auth.isAuthenticated, auth.user, navigate]);
 
 
   // 🔹 Mostra loading enquanto o callback está processando

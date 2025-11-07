@@ -16,10 +16,9 @@ export const router = (
 ) =>
   createBrowserRouter([
     // 🔹 Callback do Cognito (pública)
-    {
-      path: "/login",
-      element: <LoginCallback />,
-    },
+
+    { path: "/callback", element: <LoginCallback /> },
+
     {
       path: "/logged-out",
       element: <LoggedOut />,
