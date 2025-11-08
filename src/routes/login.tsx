@@ -7,19 +7,21 @@ export default function LoginCallback() {
   const auth = useAuth();
   const navigate = useNavigate();
 
-  // 🔹 Lida com sucesso de login
-useEffect(() => {
-  if (auth.isAuthenticated && auth.user) {
-    const { access_token, id_token } = auth.user;
-    if (access_token) localStorage.setItem("access_token", access_token);
-    if (id_token) localStorage.setItem("id_token", id_token);
+  useEffect(() => {
+    // 🚀 Quando o login termina e o usuário está autenticado
+    if (!auth.isLoading && auth.isAuthenticated && auth.user) {
+      const { access_token, id_token } = auth.user;
 
-    navigate("/app", { replace: true });
-  }
-}, [auth.isAuthenticated, auth.user, navigate]);
+      // Salva tokens localmente (opcional, se quiser reaproveitar em APIs)
+      if (access_token) localStorage.setItem("access_token", access_token);
+      if (id_token) localStorage.setItem("id_token", id_token);
 
+      // Redireciona para a dashboard
+      navigate("/app", { replace: true });
+    }
+  }, [auth.isLoading, auth.isAuthenticated, auth.user, navigate]);
 
-  // 🔹 Mostra loading enquanto o callback está processando
+  // 🔄 Enquanto o Cognito troca o "code" pelo token
   if (auth.isLoading) {
     return (
       <Box
@@ -40,7 +42,7 @@ useEffect(() => {
     );
   }
 
-  // 🔹 Trata erros de forma mais clara e amigável
+  // ❌ Se o login falhou (token inválido, redirect errado, etc.)
   if (auth.error) {
     console.error("[LoginCallback] Erro no login:", auth.error);
     return (
@@ -72,7 +74,7 @@ useEffect(() => {
     );
   }
 
-  // 🔹 Estado final de fallback — caso algo estranho aconteça
+  // 💤 Se ainda não está autenticado nem carregando (ex: URL errada)
   return (
     <Box
       sx={{
