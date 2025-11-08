@@ -15,15 +15,17 @@ export const router = (
   setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>
 ) =>
   createBrowserRouter([
-    // 🔹 Callback do Cognito (pública)
-
+    //
+    // 🔹 Rotas públicas
+    //
+    { path: "/", element: <Site /> }, // landing pública
     { path: "/login", element: <LoginCallback /> },
     { path: "/callback", element: <LoginCallback /> },
-    {
-      path: "/logged-out",
-      element: <LoggedOut />,
-    },
+    { path: "/logged-out", element: <LoggedOut /> },
+
+    //
     // 🔹 Rotas protegidas (usuário precisa estar logado)
+    //
     {
       path: "/app",
       element: (
@@ -35,17 +37,11 @@ export const router = (
         </ProtectedRoute>
       ),
       children: [
-        { index: true,path: "app", element: <Home /> },
+        { index: true, element: <Home /> },
         { path: "aeronaves/criar", element: <CreateAircraft /> },
         { path: "aeronaves/listar", element: <ListAircrafts /> },
         { path: "ordens/criar", element: <CreateOrder /> },
         { path: "perfil", element: <ProfilePage /> },
       ],
-    },
-
-    // 🔹 Rota pública (ex.: landing page do site)
-    {
-      path: "/",
-      element: <Site />,
     },
   ]);
