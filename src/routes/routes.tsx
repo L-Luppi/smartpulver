@@ -35,7 +35,7 @@ export const router = (
         </ProtectedRoute>
       ),
       children: [
-        { index: true, element: <Home /> },
+        { index: true,path: "app", element: <Home /> },
         { path: "aeronaves/criar", element: <CreateAircraft /> },
         { path: "aeronaves/listar", element: <ListAircrafts /> },
         { path: "ordens/criar", element: <CreateOrder /> },
