@@ -7,7 +7,7 @@ import "@aws-amplify/ui-react/styles.css";
 import { AuthProvider } from "react-oidc-context";
 
 const cognitoAuthConfig = {
-  authority: `https://${import.meta.env.VITE_COGNITO_DOMAIN}`,
+  authority: `https://${import.meta.env.VITE_COGNITO_DOMAIN}/oauth2`,
   client_id: import.meta.env.VITE_COGNITO_CLIENT_ID,
   redirect_uri: import.meta.env.VITE_COGNITO_REDIRECT_URI,
   response_type: import.meta.env.VITE_COGNITO_RESPONSE_TYPE,
