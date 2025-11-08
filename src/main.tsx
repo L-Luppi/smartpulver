@@ -6,12 +6,22 @@ import { store } from "./store/index.ts";
 import "@aws-amplify/ui-react/styles.css";
 import { AuthProvider } from "react-oidc-context";
 
+const domain = `https://${import.meta.env.VITE_COGNITO_DOMAIN}`;
+
 const cognitoAuthConfig = {
-  authority: `https://${import.meta.env.VITE_COGNITO_DOMAIN}/oauth2`,
+  authority: `${domain}/oauth2`,
   client_id: import.meta.env.VITE_COGNITO_CLIENT_ID,
   redirect_uri: import.meta.env.VITE_COGNITO_REDIRECT_URI,
-  response_type: import.meta.env.VITE_COGNITO_RESPONSE_TYPE,
-  scope: import.meta.env.VITE_COGNITO_SCOPE,
+  post_logout_redirect_uri: import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI,
+  response_type: "code",
+  scope: "openid email phone",
+  metadata: {
+    issuer: `${domain}/oauth2`,
+    authorization_endpoint: `${domain}/oauth2/authorize`,
+    token_endpoint: `${domain}/oauth2/token`,
+    userinfo_endpoint: `${domain}/oauth2/userInfo`,
+    end_session_endpoint: `${domain}/logout`,
+  },
 };
 
 
