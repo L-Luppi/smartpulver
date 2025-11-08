@@ -4,9 +4,9 @@ export default function LoggedOut() {
   useEffect(() => {
     const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
     const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
-    const redirectUri = import.meta.env.VITE_COGNITO_REDIRECT_URI;
+    const redirectUri = import.meta.env.VITE_COGNITO_REDIRECT_URI; // https://smartpulver.com.br/callback
 
-    // redireciona para a tela de login do Hosted UI
+    // 👇 Redireciona para o Hosted UI de login
     window.location.href = `${cognitoDomain}/login?client_id=${clientId}&response_type=code&scope=openid+email+phone&redirect_uri=${encodeURIComponent(
       redirectUri
     )}`;
