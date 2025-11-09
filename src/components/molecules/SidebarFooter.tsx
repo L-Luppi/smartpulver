@@ -13,15 +13,20 @@ export default function SidebarFooter() {
     setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-  const signOutRedirect = async () => {
-    try {
-      await auth.signoutRedirect();
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch (error) {
-      console.error("Erro ao sair:", error);
-    }
-  };
+ const signOutRedirect = async () => {
+  try {
+    await auth.signoutRedirect({
+      post_logout_redirect_uri: import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI,
+      id_token_hint: auth.user?.id_token,
+    });
+
+    localStorage.clear();
+    sessionStorage.clear();
+  } catch (error) {
+    console.error("Erro ao sair:", error);
+  }
+};
+
 
   return (
     <Box>
