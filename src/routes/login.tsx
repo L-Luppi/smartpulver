@@ -12,7 +12,7 @@ export default function LoginCallback() {
       const { access_token, id_token } = auth.user;
       if (access_token) localStorage.setItem("access_token", access_token);
       if (id_token) localStorage.setItem("id_token", id_token);
-      navigate("/app", { replace: true });
+      navigate("/app/", { replace: true });
     }
   }, [auth.isAuthenticated, auth.user, navigate]);
 
@@ -40,9 +40,5 @@ export default function LoginCallback() {
     );
   }
 
-  return (
-    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-      <CircularProgress />
-    </Box>
-  );
+  return 'Página não encontrada.';
 }
