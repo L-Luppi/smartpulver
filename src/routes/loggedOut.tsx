@@ -15,6 +15,7 @@ export default function LoggedOut() {
     window.location.href = `${cognitoDomain}/login?client_id=${clientId}&response_type=code&scope=openid+email+phone&redirect_uri=${encodeURIComponent(
       redirectUri
     )}`;
+
   }, []);
 
   return <div>Redirecionando para o login...</div>;
