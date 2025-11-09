@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
-import DashboardCards from '../components/organisms/DashboardInfoCards';
-import DashboardCharts from '../components/organisms/DashboardCharts';
+import DashboardCards from '../../components/organisms/DashboardInfoCards';
+import DashboardCharts from '../../components/organisms/DashboardCharts';
 
 export default function Home() {
   return (

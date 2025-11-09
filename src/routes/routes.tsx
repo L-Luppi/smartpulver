@@ -1,11 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
 import DefaultLayout from "../layouts/DefaultLayout";
-import Home from "../pages/Home";
+import Home from "../pages/Dashboard/Home";
 import CreateAircraft from "../pages/Aircrafts/Create";
 import CreateOrder from "../pages/Orders/Create";
 import ListAircrafts from "../pages/Aircrafts/List";
 import ProfilePage from "../pages/Profile";
-import Site from "../pages/Site";
+import Site from "../pages";
 import LoginCallback from "./login";
 import ProtectedRoute from "./protectedRoute";
 import LoggedOut from "./loggedOut";

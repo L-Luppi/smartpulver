@@ -2,11 +2,11 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import Pricing from "../../components/site/Pricing";
-import Features from "../../components/site/Features";
-import Hero from "../../components/site/Hero";
-import Faq from "../../components/site/FAQ";
-import BlogSection from "../../components/site/Blog";
+import Pricing from "../components/site/Pricing";
+import Features from "../components/site/Features";
+import Hero from "../components/site/Hero";
+import Faq from "../components/site/FAQ";
+import BlogSection from "../components/site/Blog";
 
 export default function LandingPage() {
   return (

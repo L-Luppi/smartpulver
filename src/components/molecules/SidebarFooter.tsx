@@ -17,13 +17,12 @@ const signOutRedirect = () => {
   const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
   const postLogoutRedirect = import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI;
 
-  localStorage.clear();
-  sessionStorage.clear();
-
-  // 👇 Redireciona pro logout e depois volta pro /logged-out
   window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
     postLogoutRedirect
   )}`;
+
+  localStorage.clear();
+  sessionStorage.clear();
 };
 
   return (
