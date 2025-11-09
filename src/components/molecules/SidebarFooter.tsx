@@ -18,12 +18,17 @@ const signOutRedirect = () => {
   const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
   const postLogoutRedirect = import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI;
 
-  window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+  // 🔹 Limpa storage antes do redirect
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // 🔹 Força o Cognito a destruir sessão completamente
+  const logoutUrl = `https://${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
     postLogoutRedirect
   )}`;
 
-  localStorage.clear();
-  sessionStorage.clear();
+  // 🔹 Redireciona imediatamente
+  window.location.assign(logoutUrl);
 };
 
   return (
