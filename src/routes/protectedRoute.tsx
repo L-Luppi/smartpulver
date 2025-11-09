@@ -1,41 +1,12 @@
 import { useAuth } from "react-oidc-context";
-import { ReactNode, useEffect } from "react";
-import { CircularProgress, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import React from "react";
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-}
-
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!auth.isLoading && !auth.isAuthenticated) {
-      navigate("/");
-    }
-  }, [auth.isLoading, auth.isAuthenticated, navigate]);
-
-  if (auth.isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (auth.error)
-    return <div>Erro de autenticação: {auth.error.message}</div>;
-
-  if (!auth.isAuthenticated) return null;
+  if (auth.isLoading) return <div>Verificando sessão...</div>;
+  if (!auth.isAuthenticated) return <Navigate to="/logged-out" replace />;
 
   return <>{children}</>;
 }
