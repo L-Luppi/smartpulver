@@ -6,7 +6,7 @@ import { store } from "./store/index.ts";
 import "@aws-amplify/ui-react/styles.css";
 import { AuthProvider } from "react-oidc-context";
 
-const domain = `https://${import.meta.env.VITE_COGNITO_DOMAIN}`;
+const domain = import.meta.env.VITE_COGNITO_DOMAIN
 
 const cognitoAuthConfig = {
   authority: `${domain}/oauth2`,

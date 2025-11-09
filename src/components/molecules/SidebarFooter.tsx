@@ -15,7 +15,7 @@ export default function SidebarFooter() {
 
 const signOutRedirect = () => {
   const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
-  const cognitoDomain = `https://${import.meta.env.VITE_COGNITO_DOMAIN}`;
+  const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
   const postLogoutRedirect = import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI;
 
   window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
