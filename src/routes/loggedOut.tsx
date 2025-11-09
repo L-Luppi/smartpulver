@@ -6,7 +6,7 @@ export default function LoggedOut() {
     const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
     const redirectUri = import.meta.env.VITE_COGNITO_REDIRECT_URI;
 
-    window.location.href = `https://${cognitoDomain}/login?client_id=${clientId}&response_type=code&scope=openid+email+phone&redirect_uri=${encodeURIComponent(
+    window.location.href = `${cognitoDomain}/login?client_id=${clientId}&response_type=code&scope=openid+email+phone&redirect_uri=${encodeURIComponent(
       redirectUri
     )}`;
   }, []);

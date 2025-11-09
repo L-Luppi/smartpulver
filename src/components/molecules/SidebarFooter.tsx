@@ -23,7 +23,7 @@ const signOutRedirect = () => {
   sessionStorage.clear();
 
   // 🔹 Força o Cognito a destruir sessão completamente
-  const logoutUrl = `https://${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+  const logoutUrl = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
     postLogoutRedirect
   )}`;
 
