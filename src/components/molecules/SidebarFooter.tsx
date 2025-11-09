@@ -13,19 +13,13 @@ export default function SidebarFooter() {
     setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
- const signOutRedirect = async () => {
-  try {
-    await auth.signoutRedirect({
-      post_logout_redirect_uri: import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI,
-      id_token_hint: auth.user?.id_token,
-    });
+const signOutRedirect = () => {
+    const clientId = "515546nobqhqjoe80q743ob55j";
+    const logoutUri = "https://smartpulver.com.br/logged-out";
+    const cognitoDomain = "https://sa-east-1me5e1v85a.auth.sa-east-1.amazoncognito.com";
+    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+  };
 
-    localStorage.clear();
-    sessionStorage.clear();
-  } catch (error) {
-    console.error("Erro ao sair:", error);
-  }
-};
 
 
   return (
