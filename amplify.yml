@@ -22,7 +22,12 @@ frontend:
         - key: Cache-Control
           value: 'max-age=0,no-cache,no-store,must-revalidate'
   rewrites:
-    - source: '/app/<*>'
-      target: '/app/index.html'
+    - source: '/callback'
+      target: '/index.html'
+      status: 200
+    - source: '/callback/<*>'
+      target: '/index.html'
+      status: 200
     - source: '/<*>'
       target: '/index.html'
+      status: 200
