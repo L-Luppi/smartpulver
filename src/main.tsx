@@ -5,22 +5,12 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import { AuthProvider } from "react-oidc-context";
 
-const domain = import.meta.env.VITE_COGNITO_DOMAIN;
-
 const cognitoAuthConfig = {
-  authority: import.meta.env.VITE_COGNITO_AUTHORITY, // 🔹 corrigido
-  client_id: import.meta.env.VITE_COGNITO_CLIENT_ID,
-  redirect_uri: import.meta.env.VITE_COGNITO_REDIRECT_URI,
-  post_logout_redirect_uri: import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI,
+  authority: "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_Me5E1v85a",
+  client_id: "515546nobqhqjoe80q743ob55j",
+  redirect_uri: "https://smartpulver.com.br/callback",
   response_type: "code",
-  scope: import.meta.env.VITE_COGNITO_SCOPE,
-  metadata: {
-    issuer: `${domain}/oauth2`,
-    authorization_endpoint: `${domain}/oauth2/authorize`,
-    token_endpoint: `${domain}/oauth2/token`,
-    userinfo_endpoint: `${domain}/oauth2/userInfo`,
-    end_session_endpoint: `${domain}/logout`,
-  },
+  scope: "email openid phone",
 };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
