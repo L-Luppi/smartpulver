@@ -12,9 +12,9 @@ export default function SidebarFooter() {
   const handleClose = () => setAnchorEl(null);
 
 const signOutRedirect = () => {
-    const clientId = "515546nobqhqjoe80q743ob55j";
-    const logoutUri = "https://smartpulver.com.br/logged-out";
-    const cognitoDomain = "https://sa-east-1me5e1v85a.auth.sa-east-1.amazoncognito.com";
+    const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
+    const logoutUri = import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI;
+    const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };
 
