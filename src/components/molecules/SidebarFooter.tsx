@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box, Divider, List } from "@mui/material";
 import UserAvatarButton from "./UserAvatarButton";
 import UserDropdownMenu from "../molecules/UserDropdownMenu";
+import { signOut } from "@aws-amplify/auth";
 
 export default function SidebarFooter() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -11,35 +12,21 @@ export default function SidebarFooter() {
     setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-const signOutRedirect = () => {
-    // 1️⃣ Limpa tokens do Amplify (se estiver usando Amplify Auth)
-  try {
-    localStorage.clear();
-    sessionStorage.clear();
-    document.cookie.split(";").forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date(0).toUTCString() + ";path=/");
-    });
-  } catch (e) {
-    console.error("Erro limpando armazenamento local:", e);
-  }
-
-    const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
-    const logoutUri = import.meta.env.VITE_COGNITO_LOGOUT_REDIRECT_URI;
-    const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
-    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+  const signOutRedirect = async () => {
+    try {
+      await signOut({ global: true }); // ✅ substitui Auth.signOut()
+    } catch (e) {
+      console.error("Erro ao sair:", e);
+    }
   };
-
-
 
   return (
     <Box>
       <Divider />
       <List>
         <UserAvatarButton
-          name={"username"}
-          truncatedName={"truncatedUsername"}
+          name={"Usuário"}
+          truncatedName={"Usuário"}
           onClick={handleOpen}
         />
       </List>

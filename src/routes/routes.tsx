@@ -6,7 +6,6 @@ import CreateOrder from "../pages/Orders/Create";
 import ListAircrafts from "../pages/Aircrafts/List";
 import ProfilePage from "../pages/Profile";
 import Site from "../pages";
-import LoginCallback from "./login";
 import ProtectedRoute from "./protectedRoute";
 import LoggedOut from "./loggedOut";
 
@@ -19,8 +18,6 @@ export const router = (
     // 🔹 Rotas públicas
     //
     { path: "/", element: <Site /> },
-    { path: "/login", element: <LoginCallback /> },
-    { path: "/callback", element: <LoginCallback /> },
     { path: "/logged-out", element: <LoggedOut /> },
 
     //
