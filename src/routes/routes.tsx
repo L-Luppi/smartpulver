@@ -8,7 +8,6 @@ import ProfilePage from "../pages/Profile";
 import Site from "../pages";
 import ProtectedRoute from "./protectedRoute";
 import LoggedOut from "./loggedOut";
-import LoginCallback from "../pages/LoginCallback";
 
 export const router = (
   isDarkMode: boolean,
