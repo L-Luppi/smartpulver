@@ -6,7 +6,7 @@ import { store } from "./store";
 import { AuthProvider } from "react-oidc-context";
 
 const cognitoAuthConfig = {
-  authority: "https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_Me5E1v85a",
+  authority: import.meta.env.VITE_COGNITO_DOMAIN,
   client_id: "515546nobqhqjoe80q743ob55j",
   redirect_uri: "https://smartpulver.com.br/callback",
   response_type: "code",

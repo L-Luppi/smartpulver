@@ -16,16 +16,6 @@ export default function LoginCallback() {
     }
   }, [auth.isAuthenticated, auth.user, navigate]);
 
-  if (!auth.isLoading && !auth.isAuthenticated && !auth.error) {
-  return (
-    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100vh", justifyContent: "center" }}>
-      <Typography variant="body1" color="text.secondary">
-        Redirecionando...
-      </Typography>
-    </Box>
-  );
-}
-
   if (auth.isLoading) {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100vh", justifyContent: "center" }}>
@@ -50,5 +40,15 @@ export default function LoginCallback() {
     );
   }
 
-  return 'Página não encontrada.';
+  if (!auth.isAuthenticated) {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100vh", justifyContent: "center" }}>
+        <Typography variant="body1" color="text.secondary">
+          Redirecionando...
+        </Typography>
+      </Box>
+    );
+  }
+
+  return null;
 }
