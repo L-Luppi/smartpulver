@@ -7,8 +7,8 @@ export const authConfig = {
       loginWith: {
         oauth: {
           domain: "sa-east-1me5e1v85a.auth.sa-east-1.amazoncognito.com",
-          scopes: ["email", "openid", "phone"],
-          redirectSignIn: ["https://smartpulver.com.br/app"],
+          scopes: ["email", "openid", "profile"],
+          redirectSignIn: ["https://smartpulver.com.br/app/callback"],
           redirectSignOut: ["https://smartpulver.com.br/logged-out"],
           responseType: "code" as const,
         },

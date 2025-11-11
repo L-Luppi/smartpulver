@@ -8,6 +8,7 @@ import ProfilePage from "../pages/Profile";
 import Site from "../pages";
 import ProtectedRoute from "./protectedRoute";
 import LoggedOut from "./loggedOut";
+import LoginCallback from "../pages/LoginCallback";
 
 export const router = (
   isDarkMode: boolean,
@@ -24,7 +25,7 @@ export const router = (
     // 🔹 Rotas protegidas (usuário precisa estar logado)
     //
     {
-      path: "/app/",
+      path: "/app",
       element: (
         <ProtectedRoute>
           <DefaultLayout

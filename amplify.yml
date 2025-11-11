@@ -31,7 +31,7 @@ frontend:
       status: 200
 
     # 🔹 Garante que todas as rotas internas da app funcionem
-    - source: /app/<*>
+    - source: /app<*>
       target: /index.html
       status: 200
 

@@ -13,7 +13,7 @@ import {
 export default function SidebarMenu() {
   return (
     <List sx={{ flexGrow: 1 }}>
-      <SidebarItem icon={<DonutLarge />} text="Dashboard" to="/app/" />
+      <SidebarItem icon={<DonutLarge />} text="Dashboard" to="/app" />
       
       <SidebarItem
         icon={<AirplanemodeActive />}
