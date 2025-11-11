@@ -19,8 +19,8 @@ export default function SidebarMenu() {
         icon={<AirplanemodeActive />}
         text="Aeronaves"
         subItems={[
-          { text: "Cadastrar", to: "app/aeronaves/criar", icon: <AddCircleOutline /> },
-          { text: "Listar", to: "app/aeronaves/listar", icon: <FormatListBulleted /> },
+          { text: "Cadastrar", to: "aeronaves/criar", icon: <AddCircleOutline /> },
+          { text: "Listar", to: "aeronaves/listar", icon: <FormatListBulleted /> },
         ]}
       />
 
@@ -28,8 +28,8 @@ export default function SidebarMenu() {
         icon={<Article />}
         text="Ordens de Serviço"
         subItems={[
-          { text: "Criar", to: "app/ordens/criar", icon: <AddCircleOutline /> },
-          { text: "Listar", to: "app/ordens/listar", icon: <FormatListBulleted /> },
+          { text: "Criar", to: "ordens/criar", icon: <AddCircleOutline /> },
+          { text: "Listar", to: "ordens/listar", icon: <FormatListBulleted /> },
         ]}
       />
 
@@ -37,8 +37,8 @@ export default function SidebarMenu() {
         icon={<Group />}
         text="Clientes"
         subItems={[
-          { text: "Criar", to: "app/clientes/criar", icon: <AddCircleOutline /> },
-          { text: "Listar", to: "app/clientes/listar", icon: <FormatListBulleted /> },
+          { text: "Criar", to: "clientes/criar", icon: <AddCircleOutline /> },
+          { text: "Listar", to: "clientes/listar", icon: <FormatListBulleted /> },
         ]}
       />
 
@@ -46,8 +46,8 @@ export default function SidebarMenu() {
         icon={<Badge />}
         text="Funcionários"
         subItems={[
-          { text: "Criar", to: "app/funcionarios/criar", icon: <AddCircleOutline /> },
-          { text: "Listar", to: "app/funcionarios/listar", icon: <FormatListBulleted /> },
+          { text: "Criar", to: "funcionarios/criar", icon: <AddCircleOutline /> },
+          { text: "Listar", to: "funcionarios/listar", icon: <FormatListBulleted /> },
         ]}
       />
     </List>

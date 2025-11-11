@@ -1,4 +1,3 @@
-// src/utils/mask.ts
 export const maskCNPJ = (value: string) => {
   // Remove qualquer coisa que não seja número
   let digits = value.replace(/\D/g, "");
