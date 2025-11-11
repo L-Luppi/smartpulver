@@ -1,7 +1,6 @@
-// src/services/authService.ts
 export class AuthService {
   private static STORAGE_KEY =
-    `oidc.user:${import.meta.env.VITE_COGNITO_AUTHORITY}:${import.meta.env.VITE_COGNITO_CLIENT_ID}`;
+    `${import.meta.env.VITE_COGNITO_CLIENT_ID}`;
 
   static getAccessToken(): string | null {
     const raw = window.sessionStorage.getItem(this.STORAGE_KEY);
