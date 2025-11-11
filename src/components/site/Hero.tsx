@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -15,11 +15,27 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import drone from "../../assets/drone.png";
-import { useAuth } from "react-oidc-context";
+import { signInWithRedirect, signOut } from "aws-amplify/auth";
+import { getCurrentUser } from "aws-amplify/auth";
 
 export default function Hero() {
   const [openMenu, setOpenMenu] = useState(false);
-  const auth = useAuth();
+  const [user, setUser] = useState<any>(null);
+
+  // Verifica se o usuário está logado
+  useEffect(() => {
+    getCurrentUser()
+      .then(setUser)
+      .catch(() => setUser(null));
+  }, []);
+
+  const handleLogin = async () => {
+    await signInWithRedirect(); // redireciona para o Cognito Hosted UI
+  };
+
+  const handleLogout = async () => {
+    await signOut({ global: true });
+  };
 
   return (
     <Box
@@ -48,17 +64,32 @@ export default function Hero() {
             <Button sx={{ color: "#fff" }}>Home</Button>
             <Button sx={{ color: "#fff" }}>Planos</Button>
             <Button sx={{ color: "#fff" }}>Contato</Button>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "#FF9800",
-                color: "#fff",
-                "&:hover": { backgroundColor: "#e68900" },
-              }}
-              onClick={() => auth.signinRedirect()}
-            >
-              Login
-            </Button>
+
+            {user ? (
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "#f44336",
+                  color: "#fff",
+                  "&:hover": { backgroundColor: "#d32f2f" },
+                }}
+                onClick={handleLogout}
+              >
+                Sair
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "#FF9800",
+                  color: "#fff",
+                  "&:hover": { backgroundColor: "#e68900" },
+                }}
+                onClick={handleLogin}
+              >
+                Login
+              </Button>
+            )}
           </Box>
 
           {/* Menu Mobile */}
@@ -71,7 +102,7 @@ export default function Hero() {
         </Box>
       </Container>
 
-      {/* Drawer para mobile */}
+      {/* Drawer Mobile */}
       <Drawer anchor="right" open={openMenu} onClose={() => setOpenMenu(false)}>
         <Box width={250} p={2}>
           <Box display="flex" justifyContent="flex-end">
@@ -86,17 +117,31 @@ export default function Hero() {
               </ListItemButton>
             ))}
             <ListItem>
-              <Button
-                fullWidth
-                sx={{
-                  backgroundColor: "#FF9800",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#e68900" },
-                }}
-                onClick={() => auth.signinRedirect()}
-              >
-                Login
-              </Button>
+              {user ? (
+                <Button
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#f44336",
+                    color: "#fff",
+                    "&:hover": { backgroundColor: "#d32f2f" },
+                  }}
+                  onClick={handleLogout}
+                >
+                  Sair
+                </Button>
+              ) : (
+                <Button
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#FF9800",
+                    color: "#fff",
+                    "&:hover": { backgroundColor: "#e68900" },
+                  }}
+                  onClick={handleLogin}
+                >
+                  Login
+                </Button>
+              )}
             </ListItem>
           </List>
         </Box>
@@ -133,13 +178,11 @@ export default function Hero() {
               }}
             >
               Seus drones foram feitos para voar, não para você ficar preso em
-              planilhas e burocracias. Com o Smart Pulver, você elimina multas,
-              simplifica a gestão e acompanha tudo em tempo real — direto na
-              palma da sua mão.
+              planilhas e burocracias.
             </Typography>
             <Stack
               direction={{ xs: "column", sm: "row" }}
-              spacing={2} // espaço entre os botões
+              spacing={2}
               justifyContent={{ xs: "center", md: "flex-start" }}
               mb={4}
             >
@@ -175,20 +218,13 @@ export default function Hero() {
             alt="Drone"
             sx={{
               width: { xs: "80%", md: "500px" },
-              maxHeight: "800px",
               mt: { xs: 4, md: 0 },
-              ml: { xs: 0, md: 12 }, // Espaçamento lateral extra no desktop
+              ml: { xs: 0, md: 12 },
               objectFit: "contain",
               animation: "infinityMove 6s linear infinite",
               "@keyframes infinityMove": {
                 "0%": { transform: "translate(0, 0)" },
-                "12.5%": { transform: "translate(50px, -30px)" },
-                "25%": { transform: "translate(100px, 0)" },
-                "37.5%": { transform: "translate(50px, 30px)" },
-                "50%": { transform: "translate(0, 0)" },
-                "62.5%": { transform: "translate(-50px, -30px)" },
-                "75%": { transform: "translate(-100px, 0)" },
-                "87.5%": { transform: "translate(-50px, 30px)" },
+                "50%": { transform: "translate(50px, 20px)" },
                 "100%": { transform: "translate(0, 0)" },
               },
             }}
