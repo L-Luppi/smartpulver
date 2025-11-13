@@ -6,7 +6,7 @@ import { handlePostConfirmation } from './utils/cognitoHandler.js';
 //import * as manufacturersHandler from './handlers/manufacturers.js';
 //import * as dronesHandler from './handlers/drones.js';
 //import * as miscHandler from './handlers/misc.js';
-//import * as produtosHandler from './handlers/agrofit/produtos.js';
+import * as produtosHandler from './handlers/agrofit/produtos.js';
 //import * as culturasHandler from './handlers/agrofit/culturas.js';
 //import * as pragasHandler from './handlers/agrofit/pragas.js';
 import * as stripeHandlers from './handlers/stripe/stripe.js';
@@ -53,6 +53,11 @@ const routes = {
     'POST stripe/checkout': stripeHandlers.checkout,
     'POST stripe/webhook': stripeHandlers.webhook,
 
+    // Agrofit produtos endpoints
+    'GET agrofit/produtos': produtosHandler.getProdutos,
+    'GET agrofit/produtos/{id}': produtosHandler.getProdutoById,
+    'GET agrofit/produtos/search': produtosHandler.searchProdutosByName,
+
 
     // Manufacturers endpoints
     //'GET /api/v1/manufacturers': manufacturersHandler.getManufacturers,
@@ -67,7 +72,6 @@ const routes = {
     //'GET /api/v1/misc/{id}': miscHandler.getMiscContentById,
 
     // Agrofit produtos endpoints
-    //'GET /api/v1/agrofit/produtos': produtosHandler.getProdutos,
     //'GET /api/v1/agrofit/produtos/{id}': produtosHandler.getProdutoById,
 
     // Agrofit culturas endpoints
