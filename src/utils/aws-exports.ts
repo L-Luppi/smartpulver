@@ -1,16 +1,16 @@
 export const authConfig = {
   Auth: {
     Cognito: {
-      userPoolId: "sa-east-1_Me5E1v85a",
-      userPoolClientId: "515546nobqhqjoe80q743ob55j",
-      region: "sa-east-1",
+      userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID,
+      userPoolClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
+      region: import.meta.env.VITE_COGNITO_REGION,
       loginWith: {
         oauth: {
-          domain: "sa-east-1me5e1v85a.auth.sa-east-1.amazoncognito.com",
-          scopes: ["email", "openid", "phone"],
-          redirectSignIn: ["https://smartpulver.com.br/app"],
-          redirectSignOut: ["https://smartpulver.com.br/logged-out"],
-          responseType: "code" as const,
+          domain: import.meta.env.VITE_COGNITO_DOMAIN.replace("https://", ""),
+          scopes: import.meta.env.VITE_COGNITO_SCOPES.split(" "),
+          redirectSignIn: [import.meta.env.VITE_COGNITO_REDIRECT_SIGNIN],
+          redirectSignOut: [import.meta.env.VITE_COGNITO_REDIRECT_SIGNOUT],
+          responseType: import.meta.env.VITE_COGNITO_RESPONSE_TYPE as "code",
         },
       },
     },

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Container,
@@ -13,24 +13,13 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import { signInWithRedirect, signOut, getCurrentUser } from "aws-amplify/auth";
+import { signInWithRedirect } from "aws-amplify/auth";
 
 export default function Header() {
   const [openMenu, setOpenMenu] = useState(false);
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    getCurrentUser()
-      .then(setUser)
-      .catch(() => setUser(null));
-  }, []);
 
   const handleLogin = async () => {
     await signInWithRedirect();
-  };
-
-  const handleLogout = async () => {
-    await signOut({ global: true });
   };
 
   return (
@@ -59,20 +48,6 @@ export default function Header() {
             <Button sx={{ color: "#fff" }}>Home</Button>
             <Button sx={{ color: "#fff" }}>Planos</Button>
             <Button sx={{ color: "#fff" }}>Contato</Button>
-
-            {user ? (
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: "#f44336",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#d32f2f" },
-                }}
-                onClick={handleLogout}
-              >
-                Sair
-              </Button>
-            ) : (
               <Button
                 variant="contained"
                 sx={{
@@ -84,7 +59,6 @@ export default function Header() {
               >
                 Login
               </Button>
-            )}
           </Box>
 
           {/* Botão Mobile */}
@@ -113,19 +87,6 @@ export default function Header() {
               </ListItemButton>
             ))}
             <ListItem>
-              {user ? (
-                <Button
-                  fullWidth
-                  sx={{
-                    backgroundColor: "#f44336",
-                    color: "#fff",
-                    "&:hover": { backgroundColor: "#d32f2f" },
-                  }}
-                  onClick={handleLogout}
-                >
-                  Sair
-                </Button>
-              ) : (
                 <Button
                   fullWidth
                   sx={{
@@ -137,7 +98,6 @@ export default function Header() {
                 >
                   Login
                 </Button>
-              )}
             </ListItem>
           </List>
         </Box>
