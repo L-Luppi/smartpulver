@@ -13,13 +13,23 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import { signInWithRedirect } from "aws-amplify/auth";
+import { signInWithRedirect, getCurrentUser } from "aws-amplify/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const [openMenu, setOpenMenu] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
-    await signInWithRedirect();
+    try {
+      // Verifica se o usuário já está logado
+      await getCurrentUser();
+      // Se não deu erro → usuário logado
+      navigate("/app");
+    } catch {
+      // Se deu erro → não está logado → mandar para o Cognito
+      await signInWithRedirect();
+    }
   };
 
   return (
@@ -48,17 +58,17 @@ export default function Header() {
             <Button sx={{ color: "#fff" }}>Home</Button>
             <Button sx={{ color: "#fff" }}>Planos</Button>
             <Button sx={{ color: "#fff" }}>Contato</Button>
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: "#FF9800",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#e68900" },
-                }}
-                onClick={handleLogin}
-              >
-                Login
-              </Button>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#FF9800",
+                color: "#fff",
+                "&:hover": { backgroundColor: "#e68900" },
+              }}
+              onClick={handleLogin}
+            >
+              Login
+            </Button>
           </Box>
 
           {/* Botão Mobile */}
@@ -86,18 +96,19 @@ export default function Header() {
                 <ListItemText primary={text} />
               </ListItemButton>
             ))}
+
             <ListItem>
-                <Button
-                  fullWidth
-                  sx={{
-                    backgroundColor: "#FF9800",
-                    color: "#fff",
-                    "&:hover": { backgroundColor: "#e68900" },
-                  }}
-                  onClick={handleLogin}
-                >
-                  Login
-                </Button>
+              <Button
+                fullWidth
+                sx={{
+                  backgroundColor: "#FF9800",
+                  color: "#fff",
+                  "&:hover": { backgroundColor: "#e68900" },
+                }}
+                onClick={handleLogin}
+              >
+                Login
+              </Button>
             </ListItem>
           </List>
         </Box>
