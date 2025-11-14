@@ -14,12 +14,14 @@ export default function SidebarFooter() {
 
   const signOutRedirect = async () => {
     try {
-      await signOut({ global: true });
+      await signOut({
+        global: true,
+        preferRedirect: true,
+      });
     } catch (e) {
       console.error("Erro ao sair:", e);
     }
   };
-
 
   return (
     <Box>
