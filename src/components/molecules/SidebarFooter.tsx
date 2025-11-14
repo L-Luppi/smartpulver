@@ -20,7 +20,6 @@ export default function SidebarFooter() {
     }
   };
 
-  console.log(fetchAuthSession());
 
   return (
     <Box>

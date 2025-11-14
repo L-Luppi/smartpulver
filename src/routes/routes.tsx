@@ -7,7 +7,6 @@ import ListAircrafts from "../pages/Aircrafts/List";
 import ProfilePage from "../pages/Profile";
 import Site from "../pages";
 import ProtectedRoute from "./protectedRoute";
-import LoggedOut from "./loggedOut";
 
 export const router = (
   isDarkMode: boolean,
@@ -18,8 +17,6 @@ export const router = (
     // 🔹 Rotas públicas
     //
     { path: "/", element: <Site /> },
-    { path: "/logged-out", element: <LoggedOut /> },
-
     //
     // 🔹 Rotas protegidas (usuário precisa estar logado)
     //
