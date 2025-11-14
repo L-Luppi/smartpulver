@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Box, Divider, List } from "@mui/material";
 import UserAvatarButton from "./UserAvatarButton";
 import UserDropdownMenu from "../molecules/UserDropdownMenu";
-import { signOut, fetchAuthSession } from "@aws-amplify/auth";
+import { signOut } from "@aws-amplify/auth";
 
 export default function SidebarFooter() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -14,7 +14,7 @@ export default function SidebarFooter() {
 
   const signOutRedirect = async () => {
     try {
-      await signOut({ global: true }); // ✅ substitui Auth.signOut()
+      await signOut({ global: true });
     } catch (e) {
       console.error("Erro ao sair:", e);
     }
