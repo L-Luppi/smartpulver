@@ -15,8 +15,7 @@ export default function SidebarFooter() {
   const signOutRedirect = async () => {
     try {
       await signOut({
-        global: true,
-        preferRedirect: true,
+        global: true
       });
     } catch (e) {
       console.error("Erro ao sair:", e);
