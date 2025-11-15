@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getCurrentUser, signInWithRedirect } from "@aws-amplify/auth";
+import { getCurrentUser, signInWithRedirect } from "aws-amplify/auth";
 import { CircularProgress, Box } from "@mui/material";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {

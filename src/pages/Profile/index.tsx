@@ -1,11 +1,10 @@
 import { Box, Container } from "@mui/material";
-import { useAuth } from "react-oidc-context";
+
 import Sidebar from "../../components/organisms/SideBar";
 import ProfileInfoCard from "../../components/molecules/ProfileInfoCard";
 
 export default function ProfilePage() {
- const user = useAuth();
-  console.log(user)
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   return (
     <Box display="flex">
       {/* Sidebar */}

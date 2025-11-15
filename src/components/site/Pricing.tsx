@@ -15,7 +15,6 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import PaymentIcon from "@mui/icons-material/Payment";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
-import { useAuth } from "react-oidc-context";
 
 const plans = [
   {
@@ -71,40 +70,9 @@ export default function Pricing() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [activeStep, setActiveStep] = useState(0);
 
-  const auth = useAuth();
 
   const handleSubscribe = async (priceId: string) => {
-    if (!priceId) {
-      // Plano personalizado → fale conosco
-      window.location.href = "/contato";
-      return;
-    }
-
-    if (!auth.isAuthenticated) {
-      // se não logado → manda para login e guarda o plano
-      auth.signinRedirect({ state: { planId: priceId } });
-      return;
-    }
-
-    try {
-      const idToken = auth.user?.id_token;
-
-      const res = await fetch("/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({ priceId }),
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      console.error("Erro ao criar checkout:", err);
-    }
+    console.log(`Iniciar assinatura para o preço: ${priceId}`);
   };
 
 

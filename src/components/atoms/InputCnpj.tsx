@@ -1,6 +1,6 @@
 import { TextField } from "@mui/material";
 import React from "react";
-import { maskCNPJ } from "../../utils/Masks";
+import { maskCNPJ } from "../../utils/maskCNPJ";
 
 interface InputCNPJProps {
   label: string;

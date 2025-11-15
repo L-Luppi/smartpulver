@@ -25,6 +25,7 @@ export default function Header() {
       // Verifica se o usuário já está logado
       await getCurrentUser();
       // Se não deu erro → usuário logado
+
       navigate("/app");
     } catch {
       // Se deu erro → não está logado → mandar para o Cognito
