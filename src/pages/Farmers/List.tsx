@@ -1,37 +1,37 @@
 import { Box } from "@mui/material";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AircraftList from "../../components/organisms/AircraftList";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { fetchAircrafts,  deleteAircraftAsync } from "../../store/aircraftSlice";
+import { fetchFarmers, deleteFarmerAsync } from "../../store/farmerSlice";
+import FarmerList from "../../components/organisms/FarmerList";
 
-export default function ListAircrafts() {
+export default function ListFarmers() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { items, loading, page, rowsPerPage } = useAppSelector(
-    (s) => s.aircrafts
+    (s) => s.farmers
   );
 
   useEffect(() => {
-    dispatch(fetchAircrafts({ page, rowsPerPage }));
+    dispatch(fetchFarmers({ page, rowsPerPage }));
   }, [dispatch, page, rowsPerPage]);
 
   const handleEdit = (id: string) => {
-    console.log("Editar aeronave:", id);
+    navigate(`/produtores/editar/${id}`);
   };
 
   const handleDelete = (id: string) => {
-    dispatch(deleteAircraftAsync(id));
+    dispatch(deleteFarmerAsync(id));
   };
 
   const handleAdd = () => {
-    navigate("/aeronaves/criar");
+    navigate("/produtores/criar");
   };
 
   return (
     <Box>
-      <AircraftList
-        aircrafts={items}
+      <FarmerList
+        farmers={items}
         loading={loading}
         onEdit={handleEdit}
         onDelete={handleDelete}

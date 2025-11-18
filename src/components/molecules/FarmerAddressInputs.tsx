@@ -63,7 +63,7 @@ export default function FarmerAddressInputs({ state, onChange }: any) {
       </Grid>
 
       {/* Estado */}
-      <Grid size={{ xs: 12, sm: 4 }}>
+      <Grid size={{ xs: 12, sm: 2 }}>
         <Select
           label="UF"
           value={state.estado}
@@ -73,11 +73,19 @@ export default function FarmerAddressInputs({ state, onChange }: any) {
       </Grid>
 
       {/* Cidade */}
-      <Grid size={{ xs: 12, sm: 4 }}>
+      <Grid size={{ xs: 12, sm: 3 }}>
         <Input
           label="Cidade"
           value={state.cidade}
           onChange={(v) => onChange("cidade", v)}
+        />
+      </Grid>
+
+            <Grid size={{ xs: 12, sm: 3 }}>
+        <Input
+          label="Bairro"
+          value={state.bairro}
+          onChange={(v) => onChange("bairro", v)}
         />
       </Grid>
 
@@ -106,13 +114,7 @@ export default function FarmerAddressInputs({ state, onChange }: any) {
         />
       </Grid>
 
-      <Grid size={{ xs: 12, sm: 4 }}>
-        <Input
-          label="Bairro"
-          value={state.bairro}
-          onChange={(v) => onChange("bairro", v)}
-        />
-      </Grid>
+
     </>
   );
 }

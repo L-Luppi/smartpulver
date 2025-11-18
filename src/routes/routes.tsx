@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import CreateFarmer from "../pages/Farmers/Create";
+import ListFarmers from "../pages/Farmers/List";
 
 const DefaultLayout = lazy(() => import("../layouts/DefaultLayout"));
 const Home = lazy(() => import("../pages/Dashboard/Home"));
@@ -69,6 +70,14 @@ export const router = (
           element: (
             <Suspense fallback={<CircularProgress />}>
               <ListAircrafts />
+            </Suspense>
+          ),
+        },
+        {
+          path: "produtores/listar",
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              <ListFarmers />
             </Suspense>
           ),
         },

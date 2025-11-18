@@ -7,4 +7,5 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["aws-amplify"], // 👈 impede otimização binária indevida
   },
+  
 })
