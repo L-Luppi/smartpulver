@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import AircraftTable from "../molecules/AircraftTable";
+import AircraftTable from "./AircraftTable";
 
 interface AircraftListProps {
   aircrafts: any[];

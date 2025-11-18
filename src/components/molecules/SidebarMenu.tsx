@@ -35,19 +35,19 @@ export default function SidebarMenu() {
 
       <SidebarItem
         icon={<Group />}
-        text="Clientes"
+        text="Produtores"
         subItems={[
-          { text: "Criar", to: "clientes/criar", icon: <AddCircleOutline /> },
-          { text: "Listar", to: "clientes/listar", icon: <FormatListBulleted /> },
+          { text: "Criar", to: "produtores/criar", icon: <AddCircleOutline /> },
+          { text: "Listar", to: "produtores/listar", icon: <FormatListBulleted /> },
         ]}
       />
 
       <SidebarItem
         icon={<Badge />}
-        text="Funcionários"
+        text="Áreas"
         subItems={[
-          { text: "Criar", to: "funcionarios/criar", icon: <AddCircleOutline /> },
-          { text: "Listar", to: "funcionarios/listar", icon: <FormatListBulleted /> },
+          { text: "Criar", to: "áreas/criar", icon: <AddCircleOutline /> },
+          { text: "Listar", to: "áreas/listar", icon: <FormatListBulleted /> },
         ]}
       />
     </List>

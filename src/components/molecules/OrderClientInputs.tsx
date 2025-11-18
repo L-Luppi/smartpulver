@@ -1,6 +1,6 @@
 import { Grid } from "@mui/material";
 import Input from "../atoms/Input";
-import InputMaskCNPJ from "../atoms/InputCnpj";
+import InputMaskCNPJCPF from "../atoms/InputDocument";
 
 interface ClientInfoFieldsProps {
   state: {
@@ -36,7 +36,7 @@ export default function OrderClientInputs({ state, onChange }: ClientInfoFieldsP
       </Grid>
 
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <InputMaskCNPJ
+        <InputMaskCNPJCPF
           label="CNPJ"
           value={state.cnpj}
           onChange={(value) => onChange("cnpj", value)}

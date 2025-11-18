@@ -72,12 +72,13 @@ const paginatedSkeletons = Array.from({ length: rowsPerPage });
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Prefixo</TableCell>
+           
               <TableCell>Modelo</TableCell>
-              <TableCell>Fabricante</TableCell>
-              <TableCell>Ano de Fabricação</TableCell>
-              <TableCell>Tipo de Aeronave</TableCell>
-              <TableCell>Ações</TableCell>
+              <TableCell>Nome</TableCell>
+              <TableCell>Registro</TableCell>
+              <TableCell>Validade</TableCell>
+              <TableCell>Última Manutenção</TableCell>
+              <TableCell>Ativo</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

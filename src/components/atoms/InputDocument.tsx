@@ -1,14 +1,14 @@
 import { TextField } from "@mui/material";
 import React from "react";
-import { maskCNPJ } from "../../utils/maskCNPJ";
+import { maskCNPJ } from "../../utils/masks";
 
-interface InputCNPJProps {
+interface InputCNPJCPFProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
 }
 
-const InputMaskCNPJ: React.FC<InputCNPJProps> = ({ label, value, onChange }) => {
+const InputMaskCNPJCPF: React.FC<InputCNPJCPFProps> = ({ label, value, onChange }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const masked = maskCNPJ(e.target.value);
     onChange(masked);
@@ -26,4 +26,4 @@ const InputMaskCNPJ: React.FC<InputCNPJProps> = ({ label, value, onChange }) => 
   );
 };
 
-export default InputMaskCNPJ;
+export default InputMaskCNPJCPF;

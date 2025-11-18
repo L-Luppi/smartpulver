@@ -13,3 +13,12 @@ export const maskCNPJ = (value: string) => {
 
   return digits;
 };
+
+export const maskCep = (value: string) => {
+  const masked = value
+    .replace(/\D/g, "") 
+    .replace(/(\d{5})(\d)/, "$1-$2")
+    .slice(0, 9);   
+    
+  return masked;
+}

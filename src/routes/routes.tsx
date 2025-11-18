@@ -1,41 +1,101 @@
 import { createBrowserRouter } from "react-router-dom";
-import DefaultLayout from "../layouts/DefaultLayout";
-import Home from "../pages/Dashboard/Home";
-import CreateAircraft from "../pages/Aircrafts/Create";
-import CreateOrder from "../pages/Orders/Create";
-import ListAircrafts from "../pages/Aircrafts/List";
-import ProfilePage from "../pages/Profile";
-import Site from "../pages";
-import ProtectedRoute from "./protectedRoute";
+import { lazy, Suspense } from "react";
+import { Box, CircularProgress } from "@mui/material";
+import CreateFarmer from "../pages/Farmers/Create";
+
+const DefaultLayout = lazy(() => import("../layouts/DefaultLayout"));
+const Home = lazy(() => import("../pages/Dashboard/Home"));
+const CreateAircraft = lazy(() => import("../pages/Aircrafts/Create"));
+const CreateOrder = lazy(() => import("../pages/Orders/Create"));
+const ListAircrafts = lazy(() => import("../pages/Aircrafts/List"));
+const ProfilePage = lazy(() => import("../pages/Profile"));
+const Site = lazy(() => import("../pages"));
+const ProtectedRoute = lazy(() => import("./protectedRoute"));
 
 export const router = (
   isDarkMode: boolean,
   setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>
 ) =>
   createBrowserRouter([
-    //
-    // 🔹 Rotas públicas
-    //
-    { path: "/", element: <Site /> },
-    //
-    // 🔹 Rotas protegidas (usuário precisa estar logado)
-    //
+    {
+      path: "/",
+      element: (
+        <Suspense fallback={<CircularProgress />}>
+          <Site />
+        </Suspense>
+      ),
+    },
+
     {
       path: "/app",
       element: (
-        <ProtectedRoute>
-          <DefaultLayout
-            isDarkMode={isDarkMode}
-            setIsDarkMode={setIsDarkMode}
-          />
-        </ProtectedRoute>
+        <Suspense fallback={<Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <CircularProgress />
+    </Box>}>
+          <ProtectedRoute>
+            <DefaultLayout
+              isDarkMode={isDarkMode}
+              setIsDarkMode={setIsDarkMode}
+            />
+          </ProtectedRoute>
+        </Suspense>
       ),
       children: [
-        { index: true, element: <Home /> },
-        { path: "aeronaves/criar", element: <CreateAircraft /> },
-        { path: "aeronaves/listar", element: <ListAircrafts /> },
-        { path: "ordens/criar", element: <CreateOrder /> },
-        { path: "perfil", element: <ProfilePage /> },
+        {
+          index: true,
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              <Home />
+            </Suspense>
+          ),
+        },
+        {
+          path: "aeronaves/criar",
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              <CreateAircraft />
+            </Suspense>
+          ),
+        },
+        {
+          path: "aeronaves/listar",
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              <ListAircrafts />
+            </Suspense>
+          ),
+        },
+         {
+          path: "produtores/criar",
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              <CreateFarmer />
+            </Suspense>
+          ),
+        },
+        {
+          path: "ordens/criar",
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              <CreateOrder />
+            </Suspense>
+          ),
+        },
+        {
+          path: "perfil",
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              <ProfilePage />
+            </Suspense>
+          ),
+        },
       ],
     },
   ]);

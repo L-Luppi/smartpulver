@@ -1,6 +1,6 @@
 import { TableCell, TableRow } from "@mui/material";
 import ButtonDefault from "../atoms/Button";
-import { Aircraft } from "./AircraftTable";
+import { Aircraft } from "../organisms/AircraftTable";
 
 export interface AircraftRowProps {
   aircraft: Aircraft;          // ✅ usa a interface Aircraft existente

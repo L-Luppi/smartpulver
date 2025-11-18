@@ -2,7 +2,7 @@ import { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { Grid } from "@mui/material";
 import Input from "../atoms/Input";
-import InputMaskCNPJ from "../atoms/InputCnpj";
+import InputMaskCNPJ from "../atoms/InputDocument";
 import DatePickerAtom from "../atoms/DatePicker";
 import Select from "../atoms/Select";
 
