@@ -7,5 +7,14 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["aws-amplify"], // 👈 impede otimização binária indevida
   },
-  
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          mui: ["@mui/material", "@mui/icons-material"],
+        },
+      },
+    },
+  },
 })
