@@ -32,8 +32,8 @@ export default function SidebarFooter() {
 }, []);
 
 
-  const handleOpen = (e: React.MouseEvent<HTMLElement>) =>
-    setAnchorEl(e.currentTarget);
+  // const handleOpen = (e: React.MouseEvent<HTMLElement>) =>
+  //   setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   const signOutRedirect = async () => {

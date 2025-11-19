@@ -4,6 +4,7 @@ import { Box, CircularProgress } from "@mui/material";
 import CreateFarmer from "../pages/Farmers/Create";
 import ListFarmers from "../pages/Farmers/List";
 import CreateArea from "../pages/Areas/Create";
+import ListAreas from "../pages/Areas/List";
 
 const DefaultLayout = lazy(() => import("../layouts/DefaultLayout"));
 const Home = lazy(() => import("../pages/Dashboard/Home"));
@@ -94,7 +95,7 @@ export const router = (
           path: "areas/listar",
           element: (
             <Suspense fallback={<CircularProgress />}>
-              {/* <ListAreas /> */}
+            <ListAreas />
             </Suspense>
           ),
         },
