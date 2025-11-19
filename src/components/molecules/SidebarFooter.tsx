@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Box, Divider, List } from "@mui/material";
+import { signOut, fetchAuthSession } from "aws-amplify/auth";
 import UserAvatarButton from "./UserAvatarButton";
 import UserDropdownMenu from "../molecules/UserDropdownMenu";
-import { signOut, fetchAuthSession } from "aws-amplify/auth";
 
 export default function SidebarFooter() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

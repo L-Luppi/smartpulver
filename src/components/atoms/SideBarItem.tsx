@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   List,
   ListItemButton,
@@ -24,7 +25,7 @@ interface SidebarItemProps {
   subItems?: SubItem[];
 }
 
-export default function SidebarItem({
+function SidebarItem({
   icon,
   text,
   to,
@@ -75,3 +76,5 @@ export default function SidebarItem({
     </>
   );
 }
+
+export default memo(SidebarItem);
