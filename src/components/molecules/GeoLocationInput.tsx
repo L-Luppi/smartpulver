@@ -8,7 +8,7 @@ const markerIcon = L.icon({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-export default function GeoLocationInput({ state, onChange }: any) {
+export default function GeoLocationInput({ state }: any) {
   const lat = Number(state.latitude);
   const lng = Number(state.longitude);
 
