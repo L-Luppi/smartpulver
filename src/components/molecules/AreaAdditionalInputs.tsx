@@ -10,12 +10,14 @@ export default function AreaAdditionalInputs({ state, onChange }: any) {
         <Input
           label="Latitude"
           value={state.latitude ?? ""}
+          type="number"
           onChange={(v) => onChange("latitude", v === "" ? "" : parseFloat(v))}
         />
 
         <Input
           label="Longitude"
           value={state.longitude ?? ""}
+          type="number"
           onChange={(v) => onChange("longitude", v === "" ? "" : parseFloat(v))}
         />
         <NotesInput state={state} onChange={onChange} />
