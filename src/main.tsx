@@ -7,6 +7,7 @@ import { Amplify } from "aws-amplify";
 import { authConfig } from "./utils/aws-exports";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import "leaflet/dist/leaflet.css";
 
 Amplify.configure(authConfig, { ssr: true });
 

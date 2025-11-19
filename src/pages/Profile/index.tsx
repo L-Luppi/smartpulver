@@ -21,8 +21,7 @@ export default function ProfilePage() {
       >
         <Container maxWidth="md">
           <ProfileInfoCard
-            email={user?.user?.profile.email
-|| "Não informado"}
+            email={user?.user?.profile.email || "Não informado"}
             phone={user?.user?.profile.email}
           />
         </Container>

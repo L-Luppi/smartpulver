@@ -46,8 +46,8 @@ export default function SidebarMenu() {
         icon={<Badge />}
         text="Áreas"
         subItems={[
-          { text: "Criar", to: "áreas/criar", icon: <AddCircleOutline /> },
-          { text: "Listar", to: "áreas/listar", icon: <FormatListBulleted /> },
+          { text: "Criar", to: "areas/criar", icon: <AddCircleOutline /> },
+          { text: "Listar", to: "areas/listar", icon: <FormatListBulleted /> },
         ]}
       />
     </List>

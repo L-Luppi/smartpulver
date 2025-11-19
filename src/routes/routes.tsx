@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import CreateFarmer from "../pages/Farmers/Create";
 import ListFarmers from "../pages/Farmers/List";
+import CreateArea from "../pages/Areas/Create";
 
 const DefaultLayout = lazy(() => import("../layouts/DefaultLayout"));
 const Home = lazy(() => import("../pages/Dashboard/Home"));
@@ -86,6 +87,22 @@ export const router = (
           element: (
             <Suspense fallback={<CircularProgress />}>
               <CreateFarmer />
+            </Suspense>
+          ),
+        },
+         {
+          path: "areas/listar",
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              {/* <ListAreas /> */}
+            </Suspense>
+          ),
+        },
+         {
+          path: "areas/criar",
+          element: (
+            <Suspense fallback={<CircularProgress />}>
+              <CreateArea />
             </Suspense>
           ),
         },
