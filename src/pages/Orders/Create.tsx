@@ -34,7 +34,7 @@ export default function CreateOrder() {
   });
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { items, loading, page, rowsPerPage } = useAppSelector(
+  const {  loading, page, rowsPerPage } = useAppSelector(
     (s) => s.farmers
   );
 
@@ -90,7 +90,7 @@ export default function CreateOrder() {
             <RecipeInputs state={budgetData} onChange={setBudgetData} />
           </Box>
           <Box mt={4}>
-            <ProductTable products={[]} onAdd={handleAdd} onDelete={handleDelete} onEdit={handleDelete} loading={loading} />
+            <ProductTable products={[]} onAdd={handleAdd} onDelete={handleDelete} onEdit={handleEdit} loading={loading} />
           </Box>
         </CardContent>
       </Card>
