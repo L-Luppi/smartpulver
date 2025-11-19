@@ -1,7 +1,5 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 
-// Tipagem (igual à usada no PlotTable)
 export interface Plot {
   id: string;
   nome: string;
@@ -12,64 +10,69 @@ export interface Plot {
   mapeado: string;
 }
 
-// Estado inicial
-interface PlotState {
+interface PlotsState {
   plots: Plot[];
   loading: boolean;
   error: string | null;
 }
 
-const initialState: PlotState = {
+const initialState: PlotsState = {
   plots: [],
   loading: false,
   error: null,
 };
 
-// --- Thunks ----
+/* ============================
+   Thunks (coloque API depois)
+   ============================ */
 
-export const fetchPlots = createAsyncThunk(
-  "plots/fetchPlots",
-  async () => {
-    const { data } = await axios.get("/api/plots");
-    return data as Plot[];
-  }
-);
+// Buscar todos os talhões
+export const fetchPlots = createAsyncThunk("plots/fetchAll", async () => {
+  // coloque sua chamada real depois
+  return [] as Plot[];
+});
 
+// Criar talhão
 export const createPlot = createAsyncThunk(
-  "plots/createPlot",
-  async (plot: Omit<Plot, "id">) => {
-    const { data } = await axios.post("/api/plots", plot);
-    return data as Plot;
+  "plots/create",
+  async (data: Omit<Plot, "id">) => {
+    return {
+      ...data,
+      id: crypto.randomUUID(),
+    } as Plot;
   }
 );
 
+// Atualizar talhão
 export const updatePlot = createAsyncThunk(
-  "plots/updatePlot",
+  "plots/update",
   async (plot: Plot) => {
-    const { data } = await axios.put(`/api/plots/${plot.id}`, plot);
-    return data as Plot;
+    return plot;
   }
 );
 
-export const deletePlot = createAsyncThunk(
-  "plots/deletePlot",
-  async (id: string) => {
-    await axios.delete(`/api/plots/${id}`);
-    return id;
-  }
-);
+// Remover talhão
+export const deletePlot = createAsyncThunk("plots/delete", async (id: string) => {
+  return id;
+});
 
-// Slice
-const plotSlice = createSlice({
+/* ============================
+   Slice
+   ============================ */
+
+const plotsSlice = createSlice({
   name: "plots",
   initialState,
-  reducers: {},
+  reducers: {
+    clearPlots(state) {
+      state.plots = [];
+    },
+  },
   extraReducers: (builder) => {
     builder
-      // fetch
+      // Fetch
       .addCase(fetchPlots.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(fetchPlots.fulfilled, (state, action: PayloadAction<Plot[]>) => {
         state.loading = false;
@@ -80,22 +83,24 @@ const plotSlice = createSlice({
         state.error = "Erro ao carregar plots";
       })
 
-      // create
+      // Create
       .addCase(createPlot.fulfilled, (state, action: PayloadAction<Plot>) => {
         state.plots.push(action.payload);
       })
 
-      // update
+      // Update
       .addCase(updatePlot.fulfilled, (state, action: PayloadAction<Plot>) => {
         const index = state.plots.findIndex((p) => p.id === action.payload.id);
         if (index !== -1) state.plots[index] = action.payload;
       })
 
-      // delete
+      // Delete
       .addCase(deletePlot.fulfilled, (state, action: PayloadAction<string>) => {
         state.plots = state.plots.filter((p) => p.id !== action.payload);
       });
   },
 });
 
-export default plotSlice.reducer;
+export const { clearPlots } = plotsSlice.actions;
+
+export default plotsSlice.reducer;

@@ -41,6 +41,9 @@ export default function ListPlots() {
 
   const plotsMemo = useMemo(() => plots, [plots]);
 
+  console.log("plotsMemo:", plotsMemo);
+console.log("type:", Array.isArray(plotsMemo));
+
   return (
     <Box>
       <PlotTable
