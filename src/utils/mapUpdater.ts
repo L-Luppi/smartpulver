@@ -1,9 +1,16 @@
 import { useMap } from "react-leaflet";
+import { useEffect } from "react";
 
-function MapUpdater({ lat, lng }: any) {
+export default function MapUpdater({ lat, lng }) {
   const map = useMap();
-  map.setView([lat, lng]); // atualiza o centro do mapa
+
+  useEffect(() => {
+    map.setView([lat, lng]);
+
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 200);
+  }, [lat, lng, map]);
+
   return null;
 }
-
-export default MapUpdater;

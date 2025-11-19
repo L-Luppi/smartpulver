@@ -19,7 +19,7 @@ const lng = Number(String(state.longitude).replace(",", "."))
 
   return (
     <Grid container spacing={2}>
-      <Grid size={{ xs: 12 }}>
+      <Grid size={{ xs: 12 }} style={{ height: 300, width: "100%" }}>
         {state.latitude && state.longitude && (
           <MapContainer
             center={[mapLat, mapLng]}
