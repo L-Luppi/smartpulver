@@ -8,8 +8,9 @@ import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 const markerIcon = L.icon({ iconUrl, shadowUrl });
 
 export default function GeoLocationInput({ state }: any) {
-  const lat = Number(state.latitude);
-  const lng = Number(state.longitude);
+  const lat = Number(String(state.latitude).replace(",", "."))
+const lng = Number(String(state.longitude).replace(",", "."))
+
 
   const hasValidCoords = !isNaN(lat) && !isNaN(lng);
 
