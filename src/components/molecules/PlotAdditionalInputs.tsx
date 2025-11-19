@@ -12,8 +12,11 @@ export default function AreaAdditionalInputs({ state, onChange }: any) {
           value={state.latitude ?? ""}
           type="number"
           onChange={(v) =>
-  onChange("latitude", v === "" ? "" : parseFloat(v.replace(",", ".")))
-}
+            onChange(
+              "latitude",
+              v === "" ? "" : parseFloat(v.replace(",", "."))
+            )
+          }
         />
 
         <Input
@@ -21,8 +24,11 @@ export default function AreaAdditionalInputs({ state, onChange }: any) {
           value={state.longitude ?? ""}
           type="number"
           onChange={(v) =>
-  onChange("longitude", v === "" ? "" : parseFloat(v.replace(",", ".")))
-}
+            onChange(
+              "longitude",
+              v === "" ? "" : parseFloat(v.replace(",", "."))
+            )
+          }
         />
         <NotesInput state={state} onChange={onChange} />
       </Grid>

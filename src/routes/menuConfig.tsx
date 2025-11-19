@@ -26,7 +26,7 @@ export const SIDEBAR_MENU = [
     text: "Ordens de Serviço",
     subItems: [
       { text: "Criar", to: "ordens/criar", icon: <AddCircleOutline /> },
-      { text: "Listar", to: "ordens/listar", icon: <FormatListBulleted /> },
+        // { text: "Listar", to: "ordens/listar", icon: <FormatListBulleted /> },
     ],
   },
 

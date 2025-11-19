@@ -19,13 +19,14 @@ const lng = Number(String(state.longitude).replace(",", "."))
 
   return (
     <Grid container spacing={2}>
-      <Grid size={{ xs: 12 }} style={{ height: 300, width: "100%" }}>
+      <Grid size={{ xs: 12 }}>
+        <div style={{ height: 300, width: "100%" }}>
         {state.latitude && state.longitude && (
           <MapContainer
             center={[mapLat, mapLng]}
             zoom={15}
             scrollWheelZoom={true}
-            style={{ height: 300, width: "100%" }}
+            style={{ height: "100%", width: "100%" }}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
@@ -36,6 +37,7 @@ const lng = Number(String(state.longitude).replace(",", "."))
             <MapUpdater lat={mapLat} lng={mapLng} />
           </MapContainer>
         )}
+        </div>
       </Grid>
     </Grid>
   );
