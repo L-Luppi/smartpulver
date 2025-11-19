@@ -9,18 +9,16 @@ interface MapUpdaterProps {
 export default function MapUpdater({ lat, lng }: MapUpdaterProps) {
   const map = useMap(); // map é do tipo Map
 
-  useEffect(() => {
-    if (!map) return;
+ useEffect(() => {
+  if (!map) return;
 
-    map.setView([lat, lng]);
+  map.setView([lat, lng]);
 
-    // Garante que o Leaflet recalcule o tamanho depois do layout estar pronto
-    const timeoutId = setTimeout(() => {
-      map.invalidateSize();
-    }, 200);
+  requestAnimationFrame(() => {
+    map.invalidateSize();
+  });
+}, [lat, lng, map]);
 
-    return () => clearTimeout(timeoutId);
-  }, [lat, lng, map]);
 
   return null;
 }

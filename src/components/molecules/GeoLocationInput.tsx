@@ -8,9 +8,8 @@ import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 const markerIcon = L.icon({ iconUrl, shadowUrl });
 
 export default function GeoLocationInput({ state }: any) {
-  const lat = Number(String(state.latitude).replace(",", "."))
-const lng = Number(String(state.longitude).replace(",", "."))
-
+  const lat = Number(String(state.latitude).replace(",", "."));
+  const lng = Number(String(state.longitude).replace(",", "."));
 
   const hasValidCoords = !isNaN(lat) && !isNaN(lng);
 
@@ -20,23 +19,35 @@ const lng = Number(String(state.longitude).replace(",", "."))
   return (
     <Grid container spacing={2}>
       <Grid size={{ xs: 12 }}>
-        <div style={{ height: 300, width: "100%" }}>
-        {state.latitude && state.longitude && (
-          <MapContainer
-            center={[mapLat, mapLng]}
-            zoom={15}
-            scrollWheelZoom={true}
-            style={{ height: "100%", width: "100%" }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-            {hasValidCoords && (
-              <Marker position={[mapLat, mapLng]} icon={markerIcon} />
-            )}
-
-            <MapUpdater lat={mapLat} lng={mapLng} />
-          </MapContainer>
-        )}
+        <div
+          id="map-wrapper"
+          style={{
+            height: "300px",
+            width: "100%",
+            minHeight: "300px",
+            position: "relative",
+          }}
+        >
+          {state.latitude && state.longitude && (
+            <MapContainer
+              center={[mapLat, mapLng]}
+              zoom={15}
+              scrollWheelZoom={true}
+              style={{
+                height: "100%",
+                width: "100%",
+                position: "absolute",
+                top: 0,
+                left: 0,
+              }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {hasValidCoords && (
+                <Marker position={[mapLat, mapLng]} icon={markerIcon} />
+              )}
+              <MapUpdater lat={mapLat} lng={mapLng} />
+            </MapContainer>
+          )}
         </div>
       </Grid>
     </Grid>
