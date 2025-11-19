@@ -1,16 +1,17 @@
 import { Box } from "@mui/material";
 import { Dispatch, SetStateAction } from "react";
 import OrderDetailstInputs from "../molecules/OrderDetailsInputs";
+import { Dayjs } from 'dayjs';
 
 interface OrderDetailsData {
   numeroServico: string;
   cliente: string;
-  cnpj: string;
-  propriedade: string;
-  talhao: string;
-  estado: string;
-  municipio: string;
-  endereco: string;
+  nomeArea: string;
+  area: number;
+  dataAbertura: Dayjs | null;
+  previstoPara: Dayjs | null;
+  dataFechamento: Dayjs | null;
+  totalValue: number;
 }
 
 interface OrderDetailsFormProps {
@@ -22,7 +23,7 @@ export default function OrderDetailsForm({
   state,
   setState,
 }: OrderDetailsFormProps) {
-  const handleChange = (field: keyof OrderDetailsData, value: string) => {
+  const handleChange = (field: keyof OrderDetailsData, value: string | Dayjs) => {
     setState({ ...state, [field]: value });
   };
 

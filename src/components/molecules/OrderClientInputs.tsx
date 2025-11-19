@@ -1,17 +1,12 @@
 import { Grid } from "@mui/material";
 import Input from "../atoms/Input";
-import InputMaskCNPJCPF from "../atoms/InputDocument";
 
 interface ClientInfoFieldsProps {
   state: {
     numeroServico: string;
     cliente: string;
-    cnpj: string;
-    propriedade: string;
-    talhao: string;
-    estado: string;
-    municipio: string;
-    endereco: string;
+    nomeArea: string;
+    area: number;
   };
   onChange: (field: keyof ClientInfoFieldsProps["state"], value: string) => void;
 }
@@ -36,50 +31,18 @@ export default function OrderClientInputs({ state, onChange }: ClientInfoFieldsP
       </Grid>
 
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <InputMaskCNPJCPF
-          label="CNPJ"
-          value={state.cnpj}
-          onChange={(value) => onChange("cnpj", value)}
+        <Input
+          label="Área a ser aplicada"
+          value={state.nomeArea}
+          onChange={(value) => onChange("nomeArea", value)}
         />
       </Grid>
 
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Input
-          label="Propriedade"
-          value={state.propriedade}
-          onChange={(value) => onChange("propriedade", value)}
-        />
-      </Grid>
-
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <Input
-          label="Talhão"
-          value={state.talhao}
-          onChange={(value) => onChange("talhao", value)}
-        />
-      </Grid>
-
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <Input
-          label="Estado"
-          value={state.estado}
-          onChange={(value) => onChange("estado", value)}
-        />
-      </Grid>
-
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <Input
-          label="Município"
-          value={state.municipio}
-          onChange={(value) => onChange("municipio", value)}
-        />
-      </Grid>
-
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <Input
-          label="Endereço da propriedade"
-          value={state.endereco}
-          onChange={(value) => onChange("endereco", value)}
+          label="Área (ha)"
+          value={state.area}
+          onChange={(value) => onChange("area", value)}
         />
       </Grid>
     </Grid>

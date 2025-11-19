@@ -5,12 +5,8 @@ import { Dispatch, SetStateAction } from "react";
 interface ClientFormData {
   numeroServico: string;
   cliente: string;
-  cnpj: string;
-  propriedade: string;
-  talhao: string;
-  estado: string;
-  municipio: string;
-  endereco: string;
+  nomeArea: string;
+  area: number;
 }
 
 interface OrderFormProps {

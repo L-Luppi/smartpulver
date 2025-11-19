@@ -1,58 +1,25 @@
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { Dispatch, SetStateAction } from "react";
-import OrderBudgetsHectare from "../molecules/OrderBudgetsService";
-import OrderBudgetsTravel from "../molecules/OrderBudgetTravel";
-import OrderBudgetsAditionalInfo from "../molecules/OrderBudgetsAditionalInfo";
-import ImageUploadAtom from "../atoms/ImageUpload";
+import Input from "../atoms/Input";
 
-export interface BudgetFormData {
-  value: string;
-  distance: string;
-  travelTotal: string;
-  aditionalValues: string;
-  orderTotal: string;
-  hectare: string;
-  area: string;
-  serviceTotal: string;
-  images?: File[];
+interface OrderAdditionalFormData {
+  notas: string;
 }
-
 interface OrderFormProps {
-  state: BudgetFormData;
-  setState: Dispatch<SetStateAction<BudgetFormData>>;
+  state: OrderAdditionalFormData;
+  setState: Dispatch<SetStateAction<OrderAdditionalFormData>>;
 }
 
-export default function OrderBudgetForm({ state, setState }: OrderFormProps) {
-  const handleChange = (field: keyof BudgetFormData, value: any) => {
+export default function OrderAdditionalInputs({ state, setState }: OrderFormProps) {
+  const handleChange = (field: keyof OrderAdditionalFormData, value: any) => {
     setState({ ...state, [field]: value });
   };
 
   return (
     <Box>
           <Grid container spacing={3}>
-            {/* Linha 1 */}
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <OrderBudgetsHectare state={state} onChange={handleChange} />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <OrderBudgetsTravel state={state} onChange={handleChange} />
-            </Grid>
-
-            {/* Linha 2 */}
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <OrderBudgetsAditionalInfo
-                state={state}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="h6">Croqui / Mapa da aplicação</Typography>
-              </Grid>
-              <ImageUploadAtom
-                onChange={(value) => handleChange("images", value)}
-                value={state.images}
-              />
+            <Grid size={{ xs: 12 }}>
+              <Input label="Informação Preliminar" type="area" value={state.notas} onChange={(v) => handleChange("notas", v)} />
             </Grid>
           </Grid>
     </Box>
