@@ -1,38 +1,6 @@
 import { Grid } from "@mui/material";
 import Input from "../atoms/Input";
-import Select from "../atoms/Select";
 import InputMaskCEP from "../atoms/InputAddress";
-
-export const estadosBrasil = [
-  { value: "AC", label: "Acre" },
-  { value: "AL", label: "Alagoas" },
-  { value: "AP", label: "Amapá" },
-  { value: "AM", label: "Amazonas" },
-  { value: "BA", label: "Bahia" },
-  { value: "CE", label: "Ceará" },
-  { value: "DF", label: "Distrito Federal" },
-  { value: "ES", label: "Espírito Santo" },
-  { value: "GO", label: "Goiás" },
-  { value: "MA", label: "Maranhão" },
-  { value: "MT", label: "Mato Grosso" },
-  { value: "MS", label: "Mato Grosso do Sul" },
-  { value: "MG", label: "Minas Gerais" },
-  { value: "PA", label: "Pará" },
-  { value: "PB", label: "Paraíba" },
-  { value: "PR", label: "Paraná" },
-  { value: "PE", label: "Pernambuco" },
-  { value: "PI", label: "Piauí" },
-  { value: "RJ", label: "Rio de Janeiro" },
-  { value: "RN", label: "Rio Grande do Norte" },
-  { value: "RS", label: "Rio Grande do Sul" },
-  { value: "RO", label: "Rondônia" },
-  { value: "RR", label: "Roraima" },
-  { value: "SC", label: "Santa Catarina" },
-  { value: "SP", label: "São Paulo" },
-  { value: "SE", label: "Sergipe" },
-  { value: "TO", label: "Tocantins" },
-];
-
 
 export default function AreasAddressInputs({ state, onChange }: any) {
   const handleCepBlur = async () => {
@@ -64,11 +32,11 @@ export default function AreasAddressInputs({ state, onChange }: any) {
 
       {/* Estado */}
       <Grid size={{ xs: 12, sm: 2 }}>
-        <Select
+        <Input
           label="UF"
           value={state.estado}
+          disable
           onChange={(v) => onChange("estado", v)}
-          options={estadosBrasil}
         />
       </Grid>
 
@@ -77,6 +45,7 @@ export default function AreasAddressInputs({ state, onChange }: any) {
         <Input
           label="Cidade"
           value={state.cidade}
+          disable
           onChange={(v) => onChange("cidade", v)}
         />
       </Grid>
@@ -85,6 +54,7 @@ export default function AreasAddressInputs({ state, onChange }: any) {
         <Input
           label="Bairro"
           value={state.bairro}
+          disable
           onChange={(v) => onChange("bairro", v)}
         />
       </Grid>
@@ -94,6 +64,7 @@ export default function AreasAddressInputs({ state, onChange }: any) {
         <Input
           label="Endereço"
           value={state.logradouro}
+          disable
           onChange={(v) => onChange("logradouro", v)}
         />
       </Grid>
