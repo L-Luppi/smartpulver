@@ -34,7 +34,6 @@ export default function ProductTable({
   products,
   onEdit,
   onDelete,
-  onAdd,
   loading = false,
 }: ProductTableProps) {
   const [page, setPage] = useState(0);
