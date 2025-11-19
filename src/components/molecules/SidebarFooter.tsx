@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { Box, Divider, List } from "@mui/material";
 import UserAvatarButton from "./UserAvatarButton";
 import UserDropdownMenu from "../molecules/UserDropdownMenu";
-import { signOut, getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
+import { signOut, fetchAuthSession } from "aws-amplify/auth";
 
 export default function SidebarFooter() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const [userName, setUserName] = useState({});
+  const [userName, setUserName] = useState<any>({});
   useEffect(() => {
   async function loadUser() {
     try {
@@ -32,8 +32,8 @@ export default function SidebarFooter() {
 }, []);
 
 
-  // const handleOpen = (e: React.MouseEvent<HTMLElement>) =>
-  //   setAnchorEl(e.currentTarget);
+  const handleOpen = (e: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   const signOutRedirect = async () => {
@@ -47,13 +47,13 @@ export default function SidebarFooter() {
   return (
     <Box>
       <Divider />
-      {/* <List>
+      <List>
         <UserAvatarButton
           name={userName.name || "Usuário"}
           truncatedName={userName.name ? String(userName.name).split(" ")[0] : "Usuário"}
           onClick={handleOpen}
         />
-      </List> */}
+      </List>
 
       <UserDropdownMenu
         anchorEl={anchorEl}
